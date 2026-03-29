@@ -451,7 +451,8 @@ function cardHTML(task) {
   const importantCls  = task.isImportant ? ' important' : '';
   const descPart = task.description
     ? `<div class="card-desc">${escHtml(task.description)}</div>` : '';
-  const timePart = task.dueTime ? ` · ${fmtTime12(task.dueTime)}` : '';
+  const timePart   = task.dueTime ? ` · ${fmtTime12(task.dueTime)}` : '';
+  const linkBadge  = task.links?.length ? `<span class="card-link-badge">🔗 ${task.links.length}</span>` : '';
   // Tags: Queue (cyan) first, Deliverables (blue) second
   const pillParts = [];
   if (task.isQueue)              pillParts.push(`<span class="card-tag-pill pill-queue">Queue</span>`);
@@ -476,7 +477,10 @@ function cardHTML(task) {
       ${descPart}
       <div class="card-footer">
         <span class="card-countdown">${state.label}</span>
-        <span class="card-created">${shortDate(task.dueDate)}${timePart}</span>
+        <div class="card-meta">
+          ${linkBadge}
+          <span class="card-created">${shortDate(task.dueDate)}${timePart}</span>
+        </div>
       </div>
     </div>`;
 }
@@ -581,12 +585,50 @@ function confirmResetOrder() {
   renderBoard();
 }
 
+/* ─── Links Field ────────────────────────────────────────────────────────────── */
+function renderLinkInputs(links) {
+  document.getElementById('f-links-list').innerHTML = '';
+  const initial = links.length ? links : [''];
+  initial.forEach(url => addLinkInput(url, false));
+}
+
+function addLinkInput(value = '', focus = false) {
+  const list = document.getElementById('f-links-list');
+  const row  = document.createElement('div');
+  row.className = 'link-input-row';
+  row.innerHTML = `
+    <input type="text" class="link-input" placeholder="https://...">
+    <button type="button" class="btn-link-remove" onclick="removeLinkInput(this)" aria-label="Remove link" tabindex="-1">✕</button>`;
+  row.querySelector('input').value = value; // set value directly to avoid XSS
+  list.appendChild(row);
+  if (focus) row.querySelector('input').focus();
+}
+
+function removeLinkInput(btn) {
+  const list = document.getElementById('f-links-list');
+  const row  = btn.closest('.link-input-row');
+  // Keep at least one row — just clear it instead of removing
+  if (list.children.length > 1) {
+    row.remove();
+  } else {
+    row.querySelector('input').value = '';
+  }
+}
+
+// Collect, validate, and return non-empty http/https URLs
+function collectLinks() {
+  return [...document.querySelectorAll('#f-links-list .link-input')]
+    .map(el => el.value.trim())
+    .filter(url => /^https?:\/\/.+/.test(url));
+}
+
 /* ─── Modal – Add / Edit ─────────────────────────────────────────────────────── */
 function openModal() {
   editingId = null;
   document.getElementById('modal-heading').textContent = 'New Task';
   document.getElementById('submit-btn').textContent    = 'Add Task';
   document.getElementById('task-form').reset();
+  renderLinkInputs([]);
   setDefaultDate();
   const _n = new Date();
   document.getElementById('f-time').value =
@@ -608,6 +650,7 @@ function openEdit(taskId) {
   document.getElementById('f-tag').checked       = task.tag === 'Deliverables';
   document.getElementById('f-queue').checked     = !!task.isQueue;
   document.getElementById('f-important').checked = !!task.isImportant;
+  renderLinkInputs(task.links || []);
   show('modal-overlay');
   setTimeout(() => document.getElementById('f-title').focus(), 80);
 }
@@ -634,12 +677,13 @@ function submitTask(e) {
   const tag         = document.getElementById('f-tag').checked ? 'Deliverables' : null;
   const isQueue     = document.getElementById('f-queue').checked;
   const isImportant = document.getElementById('f-important').checked;
+  const links       = collectLinks();
   if (!title || !date) return;
 
   pushHistory();
   if (editingId) {
     const task = tasks.find(t => t.id === editingId);
-    if (task) Object.assign(task, { title, description: desc, dueDate: date, dueTime: time, tag, isImportant, isQueue });
+    if (task) Object.assign(task, { title, description: desc, dueDate: date, dueTime: time, tag, isImportant, isQueue, links });
   } else {
     tasks.push({
       id:          Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
@@ -650,6 +694,7 @@ function submitTask(e) {
       tag,
       isImportant,
       isQueue,
+      links,
       createdAt:   new Date().toISOString()
     });
   }
@@ -792,6 +837,17 @@ function openPreview(taskId) {
   if (task.tag === 'Deliverables') previewPills.push(`<span class="card-tag-pill pill-deliverables">Deliverables</span>`);
   if (previewPills.length) {
     rows.push(`<div class="preview-field">${previewPills.join('')}</div>`);
+  }
+
+  if (task.links?.length) {
+    const linkItems = task.links
+      .map(url => `<a class="preview-link" href="${encodeURI(url)}" target="_blank" rel="noopener noreferrer">${escHtml(url)}</a>`)
+      .join('');
+    rows.push(`
+      <div class="preview-field">
+        <span class="preview-label">Links</span>
+        <div class="preview-links">${linkItems}</div>
+      </div>`);
   }
 
   document.getElementById('preview-body').innerHTML = rows.join('');

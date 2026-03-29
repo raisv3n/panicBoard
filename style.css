@@ -511,6 +511,9 @@ body {
 
 .card-created { font-size: 10px; color: var(--text-dim); }
 
+.card-meta { display: flex; align-items: center; gap: 6px; }
+.card-link-badge { font-size: 10px; color: var(--text-dim); }
+
 /* drag drop placeholder */
 .card-placeholder {
   border: 2px dashed var(--accent);
@@ -698,6 +701,42 @@ body {
 }
 .form-field textarea { resize: vertical; }
 
+/* ─── Links field ───────────────────────────────────────────────────────────── */
+.link-input-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.link-input-row .link-input {
+  flex: 1;
+  width: auto; /* override .form-field input width:100% */
+}
+.btn-link-remove {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: 11px;
+  padding: 3px 5px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background .15s, color .15s;
+}
+.btn-link-remove:hover { background: var(--crit-bg); color: var(--crit); }
+
+.btn-add-link {
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0;
+  cursor: pointer;
+  transition: color .15s;
+}
+.btn-add-link:hover { color: var(--accent-hover); }
+
 body[data-theme="dark"] .form-field input[type="date"],
 body[data-theme="dark"] .form-field input[type="time"] { color-scheme: dark; }
 body[data-theme="light"] .form-field input[type="date"],
@@ -785,6 +824,16 @@ body[data-theme="dark"] .preview-badge--queue {
 .preview-field { display: flex; flex-direction: column; gap: 3px; }
 .preview-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
 .preview-value { font-size: 14px; color: var(--text); margin: 0; white-space: pre-wrap; word-break: break-word; }
+
+.preview-links { display: flex; flex-direction: column; gap: 5px; }
+.preview-link {
+  font-size: 12px;
+  color: var(--accent);
+  text-decoration: none;
+  word-break: break-all;
+  transition: color .15s;
+}
+.preview-link:hover { color: var(--accent-hover); text-decoration: underline; }
 
 /* Delete button in preview — same fill/border as btn-secondary, red on hover */
 .btn-preview-delete {

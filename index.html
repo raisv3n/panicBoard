@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PanicBoard</title>
-  <link rel="stylesheet" href="style.css?v=5">
+  <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body data-theme="dark">
 
@@ -141,6 +141,11 @@
         <div class="form-field">
           <label for="f-desc">Description <span class="optional">optional</span></label>
           <textarea id="f-desc" placeholder="Add details, links, notes…" rows="3"></textarea>
+        </div>
+        <div class="form-field">
+          <label>Links <span class="optional">optional</span></label>
+          <div id="f-links-list"></div>
+          <button type="button" class="btn-add-link" onclick="addLinkInput('', true)">+ Add link</button>
         </div>
         <div class="form-row">
           <div class="form-field">
