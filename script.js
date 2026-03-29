@@ -452,7 +452,7 @@ function cardHTML(task) {
   const descPart = task.description
     ? `<div class="card-desc">${escHtml(task.description)}</div>` : '';
   const timePart   = task.dueTime ? ` · ${fmtTime12(task.dueTime)}` : '';
-  const linkBadge  = task.links?.length ? `<span class="card-link-badge">🔗 ${task.links.length}</span>` : '';
+  const linkBadge  = task.links?.length ? `<span class="card-link-badge"><svg width="11" height="11" viewBox="0 0 11 11" fill="currentColor"><path d="M3.2 7.8a2.5 2.5 0 0 1 0-3.54l1-1a2.5 2.5 0 0 1 3.54 3.54l-.5.5a.5.5 0 0 1-.7-.7l.5-.5a1.5 1.5 0 0 0-2.12-2.12l-1 1a1.5 1.5 0 0 0 0 2.12.5.5 0 0 1-.71.7z"/><path d="M7.8 3.2a2.5 2.5 0 0 1 0 3.54l-1 1a2.5 2.5 0 0 1-3.54-3.54l.5-.5a.5.5 0 0 1 .7.7l-.5.5a1.5 1.5 0 0 0 2.12 2.12l1-1a1.5 1.5 0 0 0 0-2.12.5.5 0 0 1 .71-.7z"/></svg></span>` : '';
   // Tags: Queue (cyan) first, Deliverables (blue) second
   const pillParts = [];
   if (task.isQueue)              pillParts.push(`<span class="card-tag-pill pill-queue">Queue</span>`);
@@ -467,7 +467,7 @@ function cardHTML(task) {
          ondragstart="handleDragStart(event,'${task.id}')"
          ondragend="handleDragEnd()">
       <div class="card-header">
-        <span class="card-title">${escHtml(task.title)}</span>
+        <span class="card-title">${escHtml(task.title)}</span>${linkBadge}
         <div class="card-actions">
           <button class="card-btn"        onclick="event.stopPropagation(); openEdit('${task.id}')"   title="Edit">✎</button>
           <button class="card-btn delete" onclick="event.stopPropagation(); openDelete('${task.id}')" title="Delete">✕</button>
@@ -478,7 +478,6 @@ function cardHTML(task) {
       <div class="card-footer">
         <span class="card-countdown">${state.label}</span>
         <div class="card-meta">
-          ${linkBadge}
           <span class="card-created">${shortDate(task.dueDate)}${timePart}</span>
         </div>
       </div>
@@ -824,6 +823,17 @@ function openPreview(taskId) {
       </div>`);
   }
 
+  if (task.links?.length) {
+    const linkItems = task.links
+      .map(url => `<a class="preview-link" href="${encodeURI(url)}" target="_blank" rel="noopener noreferrer">${escHtml(url)}</a>`)
+      .join('');
+    rows.push(`
+      <div class="preview-field">
+        <span class="preview-label">Links</span>
+        <div class="preview-links">${linkItems}</div>
+      </div>`);
+  }
+
   const timeStr = task.dueTime ? ` · ${fmtTime12(task.dueTime)}` : '';
   rows.push(`
     <div class="preview-field">
@@ -837,17 +847,6 @@ function openPreview(taskId) {
   if (task.tag === 'Deliverables') previewPills.push(`<span class="card-tag-pill pill-deliverables">Deliverables</span>`);
   if (previewPills.length) {
     rows.push(`<div class="preview-field">${previewPills.join('')}</div>`);
-  }
-
-  if (task.links?.length) {
-    const linkItems = task.links
-      .map(url => `<a class="preview-link" href="${encodeURI(url)}" target="_blank" rel="noopener noreferrer">${escHtml(url)}</a>`)
-      .join('');
-    rows.push(`
-      <div class="preview-field">
-        <span class="preview-label">Links</span>
-        <div class="preview-links">${linkItems}</div>
-      </div>`);
   }
 
   document.getElementById('preview-body').innerHTML = rows.join('');
