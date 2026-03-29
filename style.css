@@ -512,7 +512,6 @@ body {
 .card-created { font-size: 10px; color: var(--text-dim); }
 
 .card-meta { display: flex; align-items: center; gap: 6px; }
-.card-link-badge { display: flex; align-items: center; flex-shrink: 0; color: var(--text-dim); }
 
 /* drag drop placeholder */
 .card-placeholder {

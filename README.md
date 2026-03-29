@@ -9,7 +9,7 @@ A lightweight, deadline-focused Kanban board for tracking tasks with urgency. Bu
 ## Features
 
 - **Kanban & Timeline views** — switch between a columnar board grouped by date and a horizontal timeline
-- **Task management** — create, edit, and delete tasks with title, description, due date/time, and tag
+- **Task management** — create, edit, and delete tasks with title, description, links, due date/time, and tag
 - **Priority sorting** — mark tasks as 🔥 Priority to pin them to the top of their column, above time-sorted tasks
 - **Read-only preview** — click any card to open a quick preview before deciding to edit or delete
 - **Drag and drop** — move cards between date columns (future columns only)

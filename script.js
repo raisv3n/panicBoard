@@ -452,7 +452,6 @@ function cardHTML(task) {
   const descPart = task.description
     ? `<div class="card-desc">${escHtml(task.description)}</div>` : '';
   const timePart   = task.dueTime ? ` · ${fmtTime12(task.dueTime)}` : '';
-  const linkBadge  = task.links?.length ? `<span class="card-link-badge"><svg width="11" height="11" viewBox="0 0 11 11" fill="currentColor"><path d="M3.2 7.8a2.5 2.5 0 0 1 0-3.54l1-1a2.5 2.5 0 0 1 3.54 3.54l-.5.5a.5.5 0 0 1-.7-.7l.5-.5a1.5 1.5 0 0 0-2.12-2.12l-1 1a1.5 1.5 0 0 0 0 2.12.5.5 0 0 1-.71.7z"/><path d="M7.8 3.2a2.5 2.5 0 0 1 0 3.54l-1 1a2.5 2.5 0 0 1-3.54-3.54l.5-.5a.5.5 0 0 1 .7.7l-.5.5a1.5 1.5 0 0 0 2.12 2.12l1-1a1.5 1.5 0 0 0 0-2.12.5.5 0 0 1 .71-.7z"/></svg></span>` : '';
   // Tags: Queue (cyan) first, Deliverables (blue) second
   const pillParts = [];
   if (task.isQueue)              pillParts.push(`<span class="card-tag-pill pill-queue">Queue</span>`);
@@ -467,7 +466,7 @@ function cardHTML(task) {
          ondragstart="handleDragStart(event,'${task.id}')"
          ondragend="handleDragEnd()">
       <div class="card-header">
-        <span class="card-title">${escHtml(task.title)}</span>${linkBadge}
+        <span class="card-title">${escHtml(task.title)}</span>
         <div class="card-actions">
           <button class="card-btn"        onclick="event.stopPropagation(); openEdit('${task.id}')"   title="Edit">✎</button>
           <button class="card-btn delete" onclick="event.stopPropagation(); openDelete('${task.id}')" title="Delete">✕</button>
