@@ -13,9 +13,7 @@
   --overdue-color: #dc2626;
   --accent:       #6366f1;
   --accent-hover: #818cf8;
-  --purple:       #f97316;
-  --purple-hover: #fb923c;
-  --important:    #f97316; /* orange left border for important cards */
+  --important:    #f97316; /* orange — priority badge & card border */
 }
 
 /* ─── Dark Theme ────────────────────────────────────────────────────────────── */
@@ -41,8 +39,9 @@ body[data-theme="dark"] {
   --overdue-gradient: linear-gradient(180deg, #1a0808 0%, #14141c 60px);
 
   --accent-dim:   #1e1e40;
-  --purple-bg:    #2a1500;
-  --purple-border: #c2410c;
+  --deliverables:        #60a5fa;
+  --deliverables-bg:     #0c1f3a;
+  --deliverables-border: #1e4a7a;
   --modal-overlay-bg: rgba(0,0,0,.75);
   --shadow:    0 2px 8px rgba(0,0,0,.5);
   --shadow-lg: 0 8px 32px rgba(0,0,0,.7);
@@ -73,8 +72,9 @@ body[data-theme="light"] {
   --overdue-gradient: linear-gradient(180deg, #ffe4e4 0%, #ffffff 60px);
 
   --accent-dim:   #eef2ff;
-  --purple-bg:    #fff7ed;
-  --purple-border: #fed7aa;
+  --deliverables:        #2563eb;
+  --deliverables-bg:     #eff6ff;
+  --deliverables-border: #bfdbfe;
   --modal-overlay-bg: rgba(0,0,10,.45);
   --shadow:    0 2px 8px rgba(0,0,0,.08);
   --shadow-lg: 0 8px 32px rgba(0,0,0,.14);
@@ -830,12 +830,16 @@ body[data-theme="light"] .form-field input[type="time"] { color-scheme: light; }
 .toast.toast-overdue { border-color: var(--warn-border); color: var(--warn); }
 
 /* ─── Important card indicator ──────────────────────────────────────────────── */
-/* Orange left border wins over urgency colors, but yields to Deliverables below */
+/* Orange left border + subtle fill for priority cards */
 .card.important { border-left-color: var(--important) !important; }
+body[data-theme="light"] .card.important { background: #fff7ed; }
+body[data-theme="dark"]  .card.important { background: #1c0f00; }
 
 /* ─── Tag: Deliverables (card accent) ──────────────────────────────────────── */
-/* Purple border always wins over urgency border and important border */
-.card.tag-deliverables { border-left-color: var(--purple) !important; }
+/* Blue border always wins over urgency border and important border */
+/* Scoped per theme so values never rely on variable inheritance */
+body[data-theme="light"] .card.tag-deliverables { border-left-color: #2563eb !important; }
+body[data-theme="dark"]  .card.tag-deliverables { border-left-color: #60a5fa !important; }
 
 /* Countdown text keeps urgency color — only the border accent is overridden */
 
@@ -857,9 +861,14 @@ body[data-theme="light"] .form-field input[type="time"] { color-scheme: light; }
 }
 
 .pill-deliverables {
-  color: var(--purple);
-  background: var(--purple-bg);
-  border: 1px solid var(--purple-border);
+  color: #2563eb;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+}
+body[data-theme="dark"] .pill-deliverables {
+  color: #60a5fa;
+  background: #0c1f3a;
+  border-color: #1e4a7a;
 }
 
 .pill-deliverables::before {
@@ -879,7 +888,7 @@ body[data-theme="light"] .form-field input[type="time"] { color-scheme: light; }
 .form-field-check input[type="checkbox"] {
   width: 14px;
   height: 14px;
-  accent-color: var(--purple);
+  accent-color: var(--important);
   cursor: pointer;
   flex-shrink: 0;
   margin: 0;
