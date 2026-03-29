@@ -2,6 +2,10 @@
 
 A lightweight, deadline-focused Kanban board for tracking tasks with urgency. Built with vanilla HTML, CSS, and JavaScript — no frameworks, no build tools.
 
+![Board View](assets/board-view.png)
+![Timeline View](assets/timeline-view.png)
+![New Task](assets/new-task.png)
+
 ## Features
 
 - **Kanban & Timeline views** — switch between a columnar board grouped by date and a horizontal timeline
