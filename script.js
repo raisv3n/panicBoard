@@ -449,8 +449,16 @@ function cardHTML(task) {
   const queueCls      = task.isQueue ? ' tag-queue' : '';
   const tagCls        = task.tag === 'Deliverables' ? ' tag-deliverables' : '';
   const importantCls  = task.isImportant ? ' important' : '';
-  const descPart = task.description
-    ? `<div class="card-desc">${escHtml(task.description)}</div>` : '';
+  const descPart = (() => {
+    if (!task.description) return '';
+    if (task.description.includes('\n')) {
+      const lines = task.description.split('\n');
+      const l1 = escHtml(lines[0]);
+      const l2 = escHtml(lines[1]) + (lines.length > 2 ? '...' : '');
+      return `<div class="card-desc card-desc--multiline"><span class="card-desc-line">${l1}</span><span class="card-desc-line">${l2}</span></div>`;
+    }
+    return `<div class="card-desc">${escHtml(task.description)}</div>`;
+  })();
   const timePart   = task.dueTime ? ` · ${fmtTime12(task.dueTime)}` : '';
   // Tags: Queue (cyan) first, Deliverables (blue) second
   const pillParts = [];

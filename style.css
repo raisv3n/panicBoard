@@ -488,6 +488,16 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+.card-desc--multiline {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+.card-desc-line {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 .card-footer {
   display: flex;
