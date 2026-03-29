@@ -56,7 +56,14 @@
       <button class="btn-add-task" onclick="openModal()">
         <span>+</span> New Task
       </button>
-      <button id="btn-notes" class="btn-theme" onclick="toggleNotesPanel()" title="Notes">📝</button>
+      <button id="btn-notes" class="btn-theme" onclick="toggleNotesPanel()" title="Notes">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+          <rect x="2" y="1" width="10" height="12" rx="1.5" opacity=".3"/>
+          <rect x="4" y="4" width="6" height="1.5" rx=".75"/>
+          <rect x="4" y="6.5" width="6" height="1.5" rx=".75"/>
+          <rect x="4" y="9" width="4" height="1.5" rx=".75"/>
+        </svg>
+      </button>
       <button id="btn-theme" class="btn-theme" onclick="toggleTheme()" title="Toggle theme">
         <span id="theme-icon">☀</span>
       </button>

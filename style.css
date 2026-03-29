@@ -977,7 +977,8 @@ body[data-theme="dark"] .pill-deliverables {
 }
 .notes-textarea::placeholder { color: var(--text-dim); }
 
-/* Active state for the Notes toggle button */
+/* Notes toggle button — yellow hover, accent active */
+#btn-notes:hover { background: color-mix(in srgb, #eab308 12%, transparent); color: #eab308; border-color: color-mix(in srgb, #eab308 30%, transparent); }
 #btn-notes.active { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
 
 /* ─── Responsive ────────────────────────────────────────────────────────────── */
