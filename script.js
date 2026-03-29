@@ -8,6 +8,7 @@ let tasks                = [];
 let currentView          = 'kanban';
 let editingId            = null;
 let deletingId           = null;
+let resettingColId       = null;
 let draggedId            = null;
 let dragPlaceholder      = null;
 let historyStack         = [];
@@ -296,7 +297,18 @@ function renderKanban() {
   cols.forEach(col => {
     const colTasks = tasks
       .filter(t => getColumnId(t) === col.id)
-      .sort((a, b) => (b.isImportant - a.isImportant) || (getDeadlineMs(a) - getDeadlineMs(b)));
+      .sort((a, b) => {
+      // 1. Priority first
+      const impDiff = b.isImportant - a.isImportant;
+      if (impDiff !== 0) return impDiff;
+      // 2. Manual order (if set on both)
+      const aHas = a.manualOrder != null, bHas = b.manualOrder != null;
+      if (aHas && bHas) return a.manualOrder - b.manualOrder;
+      if (aHas) return -1;
+      if (bHas) return 1;
+      // 3. Fallback to deadline
+      return getDeadlineMs(a) - getDeadlineMs(b);
+    });
     board.appendChild(makeKanbanColumn(col, colTasks));
   });
 }
@@ -311,8 +323,14 @@ function makeKanbanColumn(col, colTasks) {
     if (col.type === 'overdue') return;
     el.classList.add('drag-over');
     const cardsEl = el.querySelector('.col-cards');
-    if (dragPlaceholder && !cardsEl.contains(dragPlaceholder)) {
+    if (!dragPlaceholder) return;
+    // Insert placeholder at the nearest valid position
+    const draggedTask    = tasks.find(t => t.id === draggedId);
+    const afterEl        = getDragAfterElement(cardsEl, e.clientY, draggedTask?.isImportant);
+    if (afterEl == null) {
       cardsEl.appendChild(dragPlaceholder);
+    } else {
+      cardsEl.insertBefore(dragPlaceholder, afterEl);
     }
   });
   el.addEventListener('dragleave', e => {
@@ -322,17 +340,24 @@ function makeKanbanColumn(col, colTasks) {
     e.preventDefault();
     el.classList.remove('drag-over');
     if (col.type === 'overdue') return;
-    dropTaskIntoCol(col);
+    dropTaskIntoCol(col, el);
   });
 
-  const icon = col.type === 'overdue' ? '🔴 ' : col.type === 'today' ? '📌 ' : '';
+  const icon       = col.type === 'overdue' ? '🔴 ' : col.type === 'today' ? '📌 ' : '';
+  const hasManual  = colTasks.some(t => t.manualOrder != null);
+  const resetBtn   = hasManual
+    ? `<button class="col-reset-btn" onclick="event.stopPropagation(); openResetOrderModal('${col.id}')" title="Reset to time order">↺</button>`
+    : '';
   el.innerHTML = `
     <div class="col-header">
       <div class="col-title-group">
         <span class="col-label">${icon}${col.label}</span>
         <span class="col-sublabel">${col.sub}</span>
       </div>
-      <span class="col-badge">${colTasks.length}</span>
+      <div class="col-actions">
+        <span class="col-badge">${colTasks.length}</span>
+        ${resetBtn}
+      </div>
     </div>
     <div class="col-cards">
       ${colTasks.map(t => cardHTML(t)).join('')}
@@ -364,7 +389,18 @@ function renderTimeline() {
   cols.forEach(col => {
     const colTasks = tasks
       .filter(t => getColumnId(t) === col.id)
-      .sort((a, b) => (b.isImportant - a.isImportant) || (getDeadlineMs(a) - getDeadlineMs(b)));
+      .sort((a, b) => {
+      // 1. Priority first
+      const impDiff = b.isImportant - a.isImportant;
+      if (impDiff !== 0) return impDiff;
+      // 2. Manual order (if set on both)
+      const aHas = a.manualOrder != null, bHas = b.manualOrder != null;
+      if (aHas && bHas) return a.manualOrder - b.manualOrder;
+      if (aHas) return -1;
+      if (bHas) return 1;
+      // 3. Fallback to deadline
+      return getDeadlineMs(a) - getDeadlineMs(b);
+    });
 
     const el = document.createElement('div');
     el.className       = `timeline-col t-${col.type}`;
@@ -410,16 +446,20 @@ function renderTimeline() {
 function cardHTML(task) {
   const state         = calculateTaskState(task);
   const pulsCls       = state.pulsing ? ' pulsing' : '';
+  const queueCls      = task.isQueue ? ' tag-queue' : '';
   const tagCls        = task.tag === 'Deliverables' ? ' tag-deliverables' : '';
   const importantCls  = task.isImportant ? ' important' : '';
   const descPart = task.description
     ? `<div class="card-desc">${escHtml(task.description)}</div>` : '';
   const timePart = task.dueTime ? ` · ${fmtTime12(task.dueTime)}` : '';
-  const tagPart  = task.tag === 'Deliverables'
-    ? `<div class="card-tag"><span class="card-tag-pill pill-deliverables">Deliverables</span></div>` : '';
+  // Tags: Queue (cyan) first, Deliverables (blue) second
+  const pillParts = [];
+  if (task.isQueue)              pillParts.push(`<span class="card-tag-pill pill-queue">Queue</span>`);
+  if (task.tag === 'Deliverables') pillParts.push(`<span class="card-tag-pill pill-deliverables">Deliverables</span>`);
+  const tagPart = pillParts.length ? `<div class="card-tag">${pillParts.join('')}</div>` : '';
 
   return `
-    <div class="card ${state.cls}${pulsCls}${tagCls}${importantCls}"
+    <div class="card ${state.cls}${pulsCls}${queueCls}${tagCls}${importantCls}"
          id="card-${task.id}"
          draggable="true"
          onclick="openPreview('${task.id}')"
@@ -464,19 +504,81 @@ function handleDragEnd() {
   draggedId = null;
 }
 
-function dropTaskIntoCol(col) {
+function dropTaskIntoCol(col, colEl) {
   if (!draggedId || !col.date) return;
   const task = tasks.find(t => t.id === draggedId);
   if (!task) return;
-  if (task.dueDate === col.date) { draggedId = null; return; }
 
   pushHistory();
-  task.dueDate = col.date;
-  draggedId = null;
 
+  if (task.dueDate !== col.date) {
+    // Cross-column drop: move to new date, clear manual order
+    task.dueDate      = col.date;
+    task.manualOrder  = null;
+  } else if (colEl) {
+    // Same-column drop: assign manualOrder based on placeholder position in DOM
+    const cardsEl  = colEl.querySelector('.col-cards');
+    const newOrder = [...cardsEl.children]
+      .map(el => {
+        if (el === dragPlaceholder)             return draggedId;  // placeholder = new position
+        if (el.id === 'card-' + draggedId)      return null;       // skip the original dragging element
+        if (el.id && el.id.startsWith('card-')) return el.id.replace('card-', '');
+        return null;
+      })
+      .filter(id => id !== null);
+
+    newOrder.forEach((id, index) => {
+      const t = tasks.find(t => t.id === id);
+      if (t) t.manualOrder = index;
+    });
+  }
+
+  draggedId = null;
   saveTasks();
   renderBoard();
   stampRefresh();
+}
+
+// Find the card element that the dragged card should be inserted before,
+// based on cursor Y position. Non-important cards cannot go above important ones.
+function getDragAfterElement(container, y, isImportantDragged) {
+  const allCards   = [...container.querySelectorAll('.card:not(.dragging)')];
+  // Non-priority cards may only insert among other non-priority cards
+  const candidates = isImportantDragged
+    ? allCards
+    : allCards.filter(c => !c.classList.contains('important'));
+
+  return candidates.reduce((closest, child) => {
+    const box    = child.getBoundingClientRect();
+    const offset = y - box.top - box.height / 2;
+    if (offset < 0 && offset > closest.offset) {
+      return { offset, element: child };
+    }
+    return closest;
+  }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+/* ─── Reset Board Order ──────────────────────────────────────────────────────── */
+function openResetOrderModal(colId) {
+  resettingColId = colId;
+  show('reset-order-overlay');
+}
+
+function closeResetOrderModal() {
+  resettingColId = null;
+  hide('reset-order-overlay');
+}
+
+function confirmResetOrder() {
+  if (!resettingColId) return;
+  pushHistory();
+  // Clear manualOrder only for tasks in this column
+  tasks
+    .filter(t => getColumnId(t) === resettingColId)
+    .forEach(t => { t.manualOrder = null; });
+  saveTasks();
+  closeResetOrderModal();
+  renderBoard();
 }
 
 /* ─── Modal – Add / Edit ─────────────────────────────────────────────────────── */
@@ -504,6 +606,7 @@ function openEdit(taskId) {
   document.getElementById('f-date').value  = task.dueDate;
   document.getElementById('f-time').value  = task.dueTime || '';
   document.getElementById('f-tag').checked       = task.tag === 'Deliverables';
+  document.getElementById('f-queue').checked     = !!task.isQueue;
   document.getElementById('f-important').checked = !!task.isImportant;
   show('modal-overlay');
   setTimeout(() => document.getElementById('f-title').focus(), 80);
@@ -529,13 +632,14 @@ function submitTask(e) {
   const date        = document.getElementById('f-date').value;
   const time        = document.getElementById('f-time').value;
   const tag         = document.getElementById('f-tag').checked ? 'Deliverables' : null;
+  const isQueue     = document.getElementById('f-queue').checked;
   const isImportant = document.getElementById('f-important').checked;
   if (!title || !date) return;
 
   pushHistory();
   if (editingId) {
     const task = tasks.find(t => t.id === editingId);
-    if (task) Object.assign(task, { title, description: desc, dueDate: date, dueTime: time, tag, isImportant });
+    if (task) Object.assign(task, { title, description: desc, dueDate: date, dueTime: time, tag, isImportant, isQueue });
   } else {
     tasks.push({
       id:          Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
@@ -545,6 +649,7 @@ function submitTask(e) {
       dueTime:     time,
       tag,
       isImportant,
+      isQueue,
       createdAt:   new Date().toISOString()
     });
   }
@@ -662,6 +767,9 @@ function openPreview(taskId) {
   if (task.isImportant) {
     rows.push(`<div class="preview-badge">🔥 Priority</div>`);
   }
+  if (task.isQueue) {
+    rows.push(`<div class="preview-badge preview-badge--queue">Queue</div>`);
+  }
 
   if (task.description) {
     rows.push(`
@@ -678,11 +786,12 @@ function openPreview(taskId) {
       <p class="preview-value">${shortDate(task.dueDate)}${timeStr}</p>
     </div>`);
 
-  if (task.tag === 'Deliverables') {
-    rows.push(`
-      <div class="preview-field">
-        <span class="card-tag-pill pill-deliverables">Deliverables</span>
-      </div>`);
+  // Tags: Queue (cyan) first, Deliverables (blue) second
+  const previewPills = [];
+  if (task.isQueue)              previewPills.push(`<span class="card-tag-pill pill-queue">Queue</span>`);
+  if (task.tag === 'Deliverables') previewPills.push(`<span class="card-tag-pill pill-deliverables">Deliverables</span>`);
+  if (previewPills.length) {
+    rows.push(`<div class="preview-field">${previewPills.join('')}</div>`);
   }
 
   document.getElementById('preview-body').innerHTML = rows.join('');
@@ -797,7 +906,7 @@ function escHtml(s) {
 
 /* ─── Keyboard Shortcuts ─────────────────────────────────────────────────────── */
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeModal(); closeDeleteModal(); closePreview(); closeClearNoteModal(); }
+  if (e.key === 'Escape') { closeModal(); closeDeleteModal(); closePreview(); closeClearNoteModal(); closeResetOrderModal(); }
   if ((e.key === 'n' || e.key === 'N') && !e.ctrlKey && !e.metaKey) {
     const tag = document.activeElement.tagName;
     if (tag !== 'INPUT' && tag !== 'TEXTAREA') openModal();

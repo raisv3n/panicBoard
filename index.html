@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PanicBoard</title>
-  <link rel="stylesheet" href="style.css?v=4">
+  <link rel="stylesheet" href="style.css?v=5">
 </head>
 <body data-theme="dark">
 
@@ -153,6 +153,10 @@
           </div>
         </div>
         <div class="form-field-check">
+          <input type="checkbox" id="f-queue">
+          <label for="f-queue">Queue</label>
+        </div>
+        <div class="form-field-check">
           <input type="checkbox" id="f-tag">
           <label for="f-tag">Deliverables</label>
         </div>
@@ -174,6 +178,20 @@
       <div class="form-actions">
         <button class="btn-secondary" onclick="closeClearModal()">Cancel</button>
         <button class="btn-danger" onclick="confirmClear()">Clear Data</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reset board order confirm -->
+  <div id="reset-order-overlay" class="modal-overlay hidden" onclick="closeResetOrderModal()">
+    <div class="modal modal-sm" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Reset Order?</h2>
+      </div>
+      <p class="delete-msg">Reset this board to time-based order? Manual positions will be lost.</p>
+      <div class="form-actions">
+        <button class="btn-secondary" onclick="closeResetOrderModal()">Cancel</button>
+        <button class="btn-primary" onclick="confirmResetOrder()">Reset</button>
       </div>
     </div>
   </div>

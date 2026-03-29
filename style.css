@@ -372,6 +372,21 @@ body {
   text-align: center;
 }
 
+.col-actions { display: flex; align-items: center; gap: 6px; }
+
+.col-reset-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.col-reset-btn:hover { background: var(--surface-3); color: var(--text-muted); }
+
 .col-overdue .col-badge { background: var(--crit-bg); border-color: var(--crit-border); color: var(--crit); }
 .col-today   .col-label { color: var(--accent-hover); }
 
@@ -758,6 +773,15 @@ body[data-theme="light"] .form-field input[type="time"] { color-scheme: light; }
   width: fit-content;
 }
 
+.preview-badge--queue {
+  color: #0891b2;
+  background: color-mix(in srgb, #0891b2 12%, transparent);
+}
+body[data-theme="dark"] .preview-badge--queue {
+  color: #22d3ee;
+  background: color-mix(in srgb, #22d3ee 12%, transparent);
+}
+
 .preview-field { display: flex; flex-direction: column; gap: 3px; }
 .preview-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
 .preview-value { font-size: 14px; color: var(--text); margin: 0; white-space: pre-wrap; word-break: break-word; }
@@ -837,8 +861,11 @@ body[data-theme="light"] .card.important { background: #fff7ed; }
 body[data-theme="dark"]  .card.important { background: #1c0f00; }
 
 /* ─── Tag: Deliverables (card accent) ──────────────────────────────────────── */
-/* Blue border always wins over urgency border and important border */
-/* Scoped per theme so values never rely on variable inheritance */
+/* Cyan border for Queue — wins over urgency and important */
+body[data-theme="light"] .card.tag-queue { border-left-color: #0891b2 !important; }
+body[data-theme="dark"]  .card.tag-queue { border-left-color: #22d3ee !important; }
+
+/* Blue border for Deliverables — wins over Queue */
 body[data-theme="light"] .card.tag-deliverables { border-left-color: #2563eb !important; }
 body[data-theme="dark"]  .card.tag-deliverables { border-left-color: #60a5fa !important; }
 
@@ -859,6 +886,17 @@ body[data-theme="dark"]  .card.tag-deliverables { border-left-color: #60a5fa !im
   padding: 2px 8px;
   border-radius: 20px;
   line-height: 1.5;
+}
+
+.pill-queue {
+  color: #0891b2;
+  background: #ecfeff;
+  border: 1px solid #a5f3fc;
+}
+body[data-theme="dark"] .pill-queue {
+  color: #22d3ee;
+  background: #042830;
+  border-color: #0e7490;
 }
 
 .pill-deliverables {
