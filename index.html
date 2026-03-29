@@ -56,6 +56,7 @@
       <button class="btn-add-task" onclick="openModal()">
         <span>+</span> New Task
       </button>
+      <button id="btn-notes" class="btn-theme" onclick="toggleNotesPanel()" title="Notes">📝</button>
       <button id="btn-theme" class="btn-theme" onclick="toggleTheme()" title="Toggle theme">
         <span id="theme-icon">☀</span>
       </button>
@@ -69,6 +70,34 @@
     <button class="board-nav-btn board-nav-right hidden" id="board-nav-right" onclick="scrollBoard(1)" title="Scroll right">›</button>
     <div id="timeline-view" class="timeline-view hidden"></div>
   </main>
+
+  <!-- Notes Panel -->
+  <aside id="notes-panel" class="notes-panel">
+    <div class="notes-header">
+      <span class="notes-title">📝 Notes</span>
+      <button class="btn-data btn-data--warn" onclick="openClearNoteModal()" title="Clear note">✕ Clear</button>
+    </div>
+    <textarea
+      id="notes-textarea"
+      class="notes-textarea"
+      placeholder="Write down ideas..."
+      oninput="saveNote()"
+    ></textarea>
+  </aside>
+
+  <!-- Clear note confirm -->
+  <div id="clear-note-overlay" class="modal-overlay hidden" onclick="closeClearNoteModal()">
+    <div class="modal modal-sm" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Clear Note?</h2>
+      </div>
+      <p class="delete-msg">Clear this note? This cannot be undone.</p>
+      <div class="form-actions">
+        <button class="btn-secondary" onclick="closeClearNoteModal()">Cancel</button>
+        <button class="btn-danger" onclick="confirmClearNote()">Clear</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Task Preview (read-only) -->
   <div id="preview-overlay" class="modal-overlay hidden" onclick="closePreview()">

@@ -18,6 +18,7 @@ A lightweight, deadline-focused Kanban board for tracking tasks with urgency. Bu
 - **Undo** — step back through the last 20 state changes with `Cmd+Z` / `Ctrl+Z`
 - **Countdown timers** — live countdowns on each card (days, hours, minutes)
 - **Stale indicator** — shows how long since the board was last refreshed
+- **Notes panel** — persistent scratchpad for quick ideas, auto-saves as you type
 - **Light / Dark theme** — persisted across sessions
 - **Toast notifications** — non-blocking feedback for actions
 
@@ -46,7 +47,13 @@ npx serve .
 
 ## Data
 
-All data is stored in `localStorage` under the key `panicboard_v1`. Nothing is sent to a server.
+All data is stored in `localStorage`. Nothing is sent to a server.
+
+| Key | Contents |
+|---|---|
+| `panicboard_v1` | Tasks array |
+| `panicboard_note` | Notes scratchpad content |
+| `panicboard_theme` | Light / dark preference |
 
 Use **Export** to save a JSON backup and **Import** to restore it on any device.
 

@@ -1,6 +1,7 @@
 /* ─── State ─────────────────────────────────────────────────────────────────── */
 const STORAGE_KEY      = 'panicboard_v1';
 const THEME_KEY        = 'panicboard_theme';
+const NOTES_KEY        = 'panicboard_note';
 const STALE_THRESHOLD  = 3 * 60 * 1000; // 3 minutes
 
 let tasks                = [];
@@ -30,6 +31,7 @@ function undo() {
 /* ─── Bootstrap ─────────────────────────────────────────────────────────────── */
 function init() {
   loadTheme();
+  loadNote();
   loadTasks();
   setDefaultDate();
   renderBoard();
@@ -706,6 +708,37 @@ function previewDelete() {
   openDelete(id);
 }
 
+/* ─── Notes Panel ────────────────────────────────────────────────────────────── */
+function loadNote() {
+  const saved = localStorage.getItem(NOTES_KEY) || '';
+  const ta = document.getElementById('notes-textarea');
+  if (ta) ta.value = saved;
+}
+
+// Persist note content on every keystroke
+function saveNote() {
+  const ta = document.getElementById('notes-textarea');
+  if (ta) localStorage.setItem(NOTES_KEY, ta.value);
+}
+
+function toggleNotesPanel() {
+  const panel = document.getElementById('notes-panel');
+  const btn   = document.getElementById('btn-notes');
+  const open  = panel.classList.toggle('open');
+  btn.classList.toggle('active', open);
+}
+
+function openClearNoteModal()  { show('clear-note-overlay'); }
+function closeClearNoteModal() { hide('clear-note-overlay'); }
+
+function confirmClearNote() {
+  // Wipe note from storage and reset textarea
+  localStorage.removeItem(NOTES_KEY);
+  const ta = document.getElementById('notes-textarea');
+  if (ta) ta.value = '';
+  closeClearNoteModal();
+}
+
 /* ─── Clear All Data ─────────────────────────────────────────────────────────── */
 function openClearModal() {
   show('clear-overlay');
@@ -764,7 +797,7 @@ function escHtml(s) {
 
 /* ─── Keyboard Shortcuts ─────────────────────────────────────────────────────── */
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeModal(); closeDeleteModal(); closePreview(); }
+  if (e.key === 'Escape') { closeModal(); closeDeleteModal(); closePreview(); closeClearNoteModal(); }
   if ((e.key === 'n' || e.key === 'N') && !e.ctrlKey && !e.metaKey) {
     const tag = document.activeElement.tagName;
     if (tag !== 'INPUT' && tag !== 'TEXTAREA') openModal();
