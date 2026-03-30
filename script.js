@@ -120,29 +120,39 @@ function calculateTaskState(task) {
   const diff = dead - now;
 
   if (diff < 0) {
-    const abs = -diff;
-    const d   = Math.floor(abs / 864e5);
-    const h   = Math.floor(abs / 36e5);
-    const m   = Math.floor(abs / 6e4);
-    const label = d >= 1 ? `⚠️ ${d}d overdue`
-                : h >= 1 ? `⚠️ ${h}h overdue`
-                :          `⚠️ ${m}m overdue`;
+    const abs  = -diff;
+    const d    = Math.floor(abs / 864e5);
+    const h    = Math.floor((abs % 864e5) / 36e5);
+    const m    = Math.floor((abs % 36e5) / 6e4);
+    const hTot = Math.floor(abs / 36e5);
+    const mTot = Math.floor(abs / 6e4);
+    let label;
+    if (d >= 1) {
+      label = h > 0 && m > 0 ? `⚠️ ${d}d ${h}h ${m}m overdue`
+            : h > 0           ? `⚠️ ${d}d ${h}h overdue`
+            : m > 0           ? `⚠️ ${d}d ${m}m overdue`
+            :                   `⚠️ ${d}d overdue`;
+    } else {
+      label = hTot >= 1 ? `⚠️ ${hTot}h ${m}m overdue` : `⚠️ ${mTot}m overdue`;
+    }
     return { label, cls: 'overdue', pulsing: false };
   }
 
-  const secs  = diff / 1000;
-  const mins  = diff / 6e4;
-  const hours = diff / 36e5;
-  const days  = diff / 864e5;
+  const secs  = Math.floor(diff / 1000);
+  const mTot  = Math.floor(diff / 6e4);
+  const hTot  = Math.floor(diff / 36e5);
+  const d     = Math.floor(diff / 864e5);
+  const h     = Math.floor((diff % 864e5) / 36e5);
+  const m     = Math.floor((diff % 36e5) / 6e4);
 
-  if (secs < 60)  return { label: `🔥 ${Math.ceil(secs)}s left`,  cls: 'critical', pulsing: true  };
-  if (hours < 1)  return { label: `🔥 ${Math.ceil(mins)}m left`,  cls: 'critical', pulsing: true  };
-  if (hours < 24) return {
-    label: `🔥 ${Math.floor(hours)}h ${String(Math.ceil(mins % 60)).padStart(2, '0')}m left`,
+  if (secs < 60)   return { label: `🔥 ${secs}s left`, cls: 'critical', pulsing: true };
+  if (hTot < 1)    return { label: `🔥 ${mTot}m left`, cls: 'critical', pulsing: true };
+  if (hTot < 24)   return {
+    label: `🔥 ${hTot}h ${String(m).padStart(2, '0')}m left`,
     cls: 'critical', pulsing: false
   };
-  if (days < 3)   return { label: `⏰ ${Math.ceil(days)}d left`,  cls: 'warning',  pulsing: false };
-  return               { label: `✓ ${Math.ceil(days)}d left`,    cls: 'safe',     pulsing: false };
+  if (d < 2)  return { label: `⏰ ${d}d ${h}h ${String(m).padStart(2, '0')}m`, cls: 'warning', pulsing: false };
+  return            { label: `✓ ${d}d left`, cls: 'safe', pulsing: false };
 }
 
 /* ─── Column Grouping ───────────────────────────────────────────────────────── */
