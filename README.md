@@ -10,9 +10,12 @@ A lightweight, deadline-focused Kanban board for tracking tasks with urgency. Bu
 
 - **Kanban & Timeline views** — switch between a columnar board grouped by date and a horizontal timeline
 - **Task management** — create, edit, and delete tasks with title, description, links, due date/time, and tag
+- **Backlog board** `NEW` — permanent first column for unscheduled or postponed tasks; due date is optional
+- **Per-board add button** `NEW` — "+" in each board header opens the task modal pre-filled with that board's date
 - **Priority sorting** — mark tasks as 🔥 Priority to pin them to the top of their column, above time-sorted tasks
+- **Manual reordering** — drag cards within a column to set a custom order; reset anytime
 - **Read-only preview** — click any card to open a quick preview before deciding to edit or delete
-- **Drag and drop** — move cards between date columns (future columns only)
+- **Drag and drop** — move cards between columns, including to and from Backlog
 - **Import / Export** — back up and restore tasks as JSON files
 - **Clear all data** — reset the board with a confirmation prompt
 - **Undo** — step back through the last 20 state changes with `Cmd+Z` / `Ctrl+Z`

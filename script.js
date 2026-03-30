@@ -108,11 +108,13 @@ function fmtTime12(hhmm) {
 
 /* ─── Task State ─────────────────────────────────────────────────────────────── */
 function getDeadlineMs(task) {
+  if (!task.dueDate) return Infinity;
   const time = task.dueTime || '23:59';
   return new Date(`${task.dueDate}T${time}:00`).getTime();
 }
 
 function calculateTaskState(task) {
+  if (!task.dueDate) return { label: '—', cls: '', pulsing: false };
   const now  = Date.now();
   const dead = getDeadlineMs(task);
   const diff = dead - now;
@@ -145,6 +147,7 @@ function calculateTaskState(task) {
 
 /* ─── Column Grouping ───────────────────────────────────────────────────────── */
 function getColumnId(task) {
+  if (task.isBacklog || !task.dueDate) return 'backlog';
   return getDeadlineMs(task) < Date.now() ? 'overdue' : task.dueDate;
 }
 
@@ -152,16 +155,18 @@ function groupTasksByDate() {
   const t   = todayStr();
   const tom = addDays(t, 1);
   const now = Date.now();
-  const cols = [];
 
-  const hasOverdue = tasks.some(task => getDeadlineMs(task) < now);
+  // Backlog is always first
+  const cols = [{ id: 'backlog', label: 'Backlog', sub: 'Unscheduled', date: null, type: 'backlog' }];
+
+  const hasOverdue = tasks.some(task => !task.isBacklog && task.dueDate && getDeadlineMs(task) < now);
   if (hasOverdue) {
     cols.push({ id: 'overdue', label: 'Overdue', sub: 'Past due', date: null, type: 'overdue' });
   }
 
   const uniqueDates = [...new Set(
     tasks
-      .filter(task => getDeadlineMs(task) >= now)
+      .filter(task => !task.isBacklog && task.dueDate && getDeadlineMs(task) >= now)
       .map(task => task.dueDate)
   )].sort();
 
@@ -169,9 +174,10 @@ function groupTasksByDate() {
     const d = new Date(ds + 'T12:00:00');
     let label, type;
 
-    if (ds === t)        { label = 'Today';    type = 'today';    }
-    else if (ds === tom) { label = 'Tomorrow'; type = 'tomorrow'; }
-    else                 { label = d.toLocaleDateString('en-US', { weekday: 'short' }); type = 'future'; }
+    const weekday = d.toLocaleDateString('en-US', { weekday: 'short' });
+    if (ds === t)        { label = `Today, ${weekday}`;    type = 'today';    }
+    else if (ds === tom) { label = `Tomorrow, ${weekday}`; type = 'tomorrow'; }
+    else                 { label = weekday; type = 'future'; }
 
     cols.push({ id: ds, label, sub: colDate(ds), date: ds, type });
   }
@@ -343,10 +349,14 @@ function makeKanbanColumn(col, colTasks) {
     dropTaskIntoCol(col, el);
   });
 
-  const icon       = col.type === 'overdue' ? '🔴 ' : col.type === 'today' ? '📌 ' : '';
+  const icon       = col.type === 'overdue' ? '🔴 ' : col.type === 'today' ? '📌 ' : col.type === 'backlog' ? '📥 ' : '';
   const hasManual  = colTasks.some(t => t.manualOrder != null);
   const resetBtn   = hasManual
     ? `<button class="col-reset-btn" onclick="event.stopPropagation(); openResetOrderModal('${col.id}')" title="Reset to time order">↺</button>`
+    : '';
+  const addDate    = col.type === 'backlog' ? '' : (col.date || '');
+  const addBtn     = col.type !== 'overdue'
+    ? `<button class="col-add-btn" onclick="event.stopPropagation(); openModal('${addDate}')" title="Add task"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><rect x="5" y="1" width="2" height="10" rx="1"/><rect x="1" y="5" width="10" height="2" rx="1"/></svg></button>`
     : '';
   el.innerHTML = `
     <div class="col-header">
@@ -356,6 +366,7 @@ function makeKanbanColumn(col, colTasks) {
       </div>
       <div class="col-actions">
         <span class="col-badge">${colTasks.length}</span>
+        ${addBtn}
         ${resetBtn}
       </div>
     </div>
@@ -459,7 +470,7 @@ function cardHTML(task) {
     }
     return `<div class="card-desc">${escHtml(task.description)}</div>`;
   })();
-  const timePart   = task.dueTime ? ` · ${fmtTime12(task.dueTime)}` : '';
+  const timePart   = task.dueDate && task.dueTime ? ` · ${fmtTime12(task.dueTime)}` : '';
   // Tags: Queue (cyan) first, Deliverables (blue) second
   const pillParts = [];
   if (task.isQueue)              pillParts.push(`<span class="card-tag-pill pill-queue">Queue</span>`);
@@ -485,7 +496,7 @@ function cardHTML(task) {
       <div class="card-footer">
         <span class="card-countdown">${state.label}</span>
         <div class="card-meta">
-          <span class="card-created">${shortDate(task.dueDate)}${timePart}</span>
+          <span class="card-created">${task.dueDate ? shortDate(task.dueDate) + timePart : 'No date'}</span>
         </div>
       </div>
     </div>`;
@@ -515,16 +526,22 @@ function handleDragEnd() {
 }
 
 function dropTaskIntoCol(col, colEl) {
-  if (!draggedId || !col.date) return;
+  if (!draggedId) return;
+  if (col.type === 'overdue') return;
   const task = tasks.find(t => t.id === draggedId);
   if (!task) return;
 
   pushHistory();
 
-  if (task.dueDate !== col.date) {
-    // Cross-column drop: move to new date, clear manual order
-    task.dueDate      = col.date;
-    task.manualOrder  = null;
+  if (col.type === 'backlog') {
+    // Drop into backlog: flag it, preserve existing date/time
+    task.isBacklog   = true;
+    task.manualOrder = null;
+  } else if (task.isBacklog || task.dueDate !== col.date) {
+    // From backlog → dated, or cross-column: assign new date, clear backlog flag
+    task.dueDate     = col.date;
+    task.isBacklog   = false;
+    task.manualOrder = null;
   } else if (colEl) {
     // Same-column drop: assign manualOrder based on placeholder position in DOM
     const cardsEl  = colEl.querySelector('.col-cards');
@@ -629,13 +646,18 @@ function collectLinks() {
 }
 
 /* ─── Modal – Add / Edit ─────────────────────────────────────────────────────── */
-function openModal() {
+function openModal(date) {
   editingId = null;
   document.getElementById('modal-heading').textContent = 'New Task';
   document.getElementById('submit-btn').textContent    = 'Add Task';
   document.getElementById('task-form').reset();
   renderLinkInputs([]);
-  setDefaultDate();
+  // Board-specific: use provided date (may be '' for backlog). Global button: default to today.
+  if (date !== undefined) {
+    document.getElementById('f-date').value = date;
+  } else {
+    setDefaultDate();
+  }
   const _n = new Date();
   document.getElementById('f-time').value =
     String(_n.getHours()).padStart(2, '0') + ':' + String(_n.getMinutes()).padStart(2, '0');
@@ -684,12 +706,12 @@ function submitTask(e) {
   const isQueue     = document.getElementById('f-queue').checked;
   const isImportant = document.getElementById('f-important').checked;
   const links       = collectLinks();
-  if (!title || !date) return;
+  if (!title) return;
 
   pushHistory();
   if (editingId) {
     const task = tasks.find(t => t.id === editingId);
-    if (task) Object.assign(task, { title, description: desc, dueDate: date, dueTime: time, tag, isImportant, isQueue, links });
+    if (task) Object.assign(task, { title, description: desc, dueDate: date, dueTime: time, tag, isImportant, isQueue, links, isBacklog: !date });
   } else {
     tasks.push({
       id:          Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
@@ -701,6 +723,7 @@ function submitTask(e) {
       isImportant,
       isQueue,
       links,
+      isBacklog:   !date,
       createdAt:   new Date().toISOString()
     });
   }

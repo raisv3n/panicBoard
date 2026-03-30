@@ -38,6 +38,11 @@ body[data-theme="dark"] {
   --overdue-border: #6b1010;
   --overdue-gradient: linear-gradient(180deg, #1a0808 0%, #14141c 60px);
 
+  --backlog-bg:       #0b0f1a;
+  --backlog-border:   #1a2540;
+  --backlog-gradient: linear-gradient(180deg, #0e1525 0%, #14141c 60px);
+  --backlog-label:    #6b8fc4;
+
   --accent-dim:   #1e1e40;
   --deliverables:        #60a5fa;
   --deliverables-bg:     #0c1f3a;
@@ -71,6 +76,11 @@ body[data-theme="light"] {
   --overdue-border: #fca5a5;
   --overdue-gradient: linear-gradient(180deg, #ffe4e4 0%, #ffffff 60px);
 
+  --backlog-bg:       #edf0f8;
+  --backlog-border:   #b8c5de;
+  --backlog-gradient: linear-gradient(180deg, #dce4f5 0%, #ffffff 60px);
+  --backlog-label:    #3a5c9a;
+
   --accent-dim:   #eef2ff;
   --deliverables:        #2563eb;
   --deliverables-bg:     #eff6ff;
@@ -91,7 +101,8 @@ body,
 .form-field input, .form-field textarea,
 .card-footer, .modal-close,
 .btn-primary, .btn-secondary, .btn-danger,
-.notes-panel, .notes-textarea {
+.notes-panel, .notes-textarea,
+.column.col-backlog {
   transition: background-color .25s ease, color .2s ease, border-color .25s ease, box-shadow .25s ease;
 }
 
@@ -323,6 +334,13 @@ body {
   box-shadow: 0 0 0 2px rgba(99,102,241,.3);
 }
 
+.column.col-backlog {
+  border-color: var(--backlog-border);
+  background: var(--backlog-gradient);
+}
+.column.col-backlog .col-header { border-bottom-color: var(--backlog-border); }
+.column.col-backlog .col-label  { color: var(--backlog-label); }
+
 .column.col-overdue {
   border-color: var(--overdue-border);
   background: var(--overdue-gradient);
@@ -386,6 +404,22 @@ body {
   transition: background .15s, color .15s;
 }
 .col-reset-btn:hover { background: var(--surface-3); color: var(--text-muted); }
+
+.col-add-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s, color .15s;
+}
+.col-add-btn:hover { background: var(--accent-dim); color: var(--accent); }
 
 .col-overdue .col-badge { background: var(--crit-bg); border-color: var(--crit-border); color: var(--crit); }
 .col-today   .col-label { color: var(--accent-hover); }
