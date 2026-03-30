@@ -798,10 +798,12 @@ function startClock() {
 
 /* ─── Export / Import ────────────────────────────────────────────────────────── */
 function exportTasks() {
-  if (!tasks.length) { alert('No tasks to export.'); return; }
+  const note = localStorage.getItem(NOTES_KEY) || '';
+  if (!tasks.length && !note) { alert('Nothing to export.'); return; }
+  const payload  = { tasks, notes: note };
   const date     = new Date().toISOString().slice(0, 10);
   const filename = `panicboard-${date}.json`;
-  const blob     = new Blob([JSON.stringify(tasks, null, 2)], { type: 'application/json' });
+  const blob     = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const url      = URL.createObjectURL(blob);
   const a        = document.createElement('a');
   a.href         = url;
@@ -817,16 +819,34 @@ function importTasks(e) {
   const reader = new FileReader();
   reader.onload = ev => {
     try {
-      const imported = JSON.parse(ev.target.result);
-      if (!Array.isArray(imported)) throw new Error('Invalid format');
+      const parsed = JSON.parse(ev.target.result);
+
+      // Support both old format (plain array) and new format ({ tasks, notes })
+      let importedTasks, importedNotes;
+      if (Array.isArray(parsed)) {
+        importedTasks = parsed;
+        importedNotes = undefined;
+      } else if (parsed && typeof parsed === 'object') {
+        importedTasks = Array.isArray(parsed.tasks) ? parsed.tasks : [];
+        importedNotes = parsed.notes;
+      } else {
+        throw new Error('Invalid format');
+      }
 
       const existingIds = new Set(tasks.map(t => t.id));
-      const fresh = imported.filter(t => t.id && t.title && t.dueDate && !existingIds.has(t.id));
+      const fresh = importedTasks.filter(t => t.id && t.title && !existingIds.has(t.id));
       tasks.push(...fresh);
       saveTasks();
       renderBoard();
 
-      const skipped = imported.length - fresh.length;
+      // Import notes if present, without overwriting if absent
+      if (importedNotes !== undefined) {
+        localStorage.setItem(NOTES_KEY, importedNotes);
+        const ta = document.getElementById('notes-textarea');
+        if (ta) ta.value = importedNotes;
+      }
+
+      const skipped = importedTasks.length - fresh.length;
       const msg = `Imported ${fresh.length} task${fresh.length !== 1 ? 's' : ''}.`
         + (skipped ? ` (${skipped} duplicate${skipped !== 1 ? 's' : ''} skipped)` : '');
       showToast(msg);
