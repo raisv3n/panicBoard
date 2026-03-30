@@ -936,6 +936,13 @@ function toggleNotesPanel() {
   btn.classList.toggle('active', open);
 }
 
+function closeNotesPanel() {
+  const panel = document.getElementById('notes-panel');
+  const btn   = document.getElementById('btn-notes');
+  panel.classList.remove('open');
+  btn.classList.remove('active');
+}
+
 function openClearNoteModal()  { show('clear-note-overlay'); }
 function closeClearNoteModal() { hide('clear-note-overlay'); }
 
@@ -1004,8 +1011,15 @@ function escHtml(s) {
 }
 
 /* ─── Keyboard Shortcuts ─────────────────────────────────────────────────────── */
+document.addEventListener('click', e => {
+  const panel = document.getElementById('notes-panel');
+  if (!panel?.classList.contains('open')) return;
+  if (e.target.closest('#notes-panel') || e.target.closest('#btn-notes')) return;
+  closeNotesPanel();
+});
+
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeModal(); closeDeleteModal(); closePreview(); closeClearNoteModal(); closeResetOrderModal(); }
+  if (e.key === 'Escape') { closeModal(); closeDeleteModal(); closePreview(); closeClearNoteModal(); closeResetOrderModal(); closeNotesPanel(); }
   if ((e.key === 'n' || e.key === 'N') && !e.ctrlKey && !e.metaKey) {
     const tag = document.activeElement.tagName;
     if (tag !== 'INPUT' && tag !== 'TEXTAREA') openModal();
