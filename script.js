@@ -152,7 +152,11 @@ function calculateTaskState(task) {
     cls: 'critical', pulsing: false
   };
   if (d < 2)  return { label: `⏰ ${d}d ${h}h ${String(m).padStart(2, '0')}m`, cls: 'warning', pulsing: false };
-  return            { label: `✓ ${d}d left`, cls: 'safe', pulsing: false };
+  // >= 2 days: round to calendar days (Thu is always 3d from Mon regardless of time)
+  const todayMid = new Date(todayStr() + 'T00:00:00').getTime();
+  const dueMid   = new Date(task.dueDate + 'T00:00:00').getTime();
+  const calDays  = Math.round((dueMid - todayMid) / 864e5);
+  return { label: `✓ ${calDays}d left`, cls: 'safe', pulsing: false };
 }
 
 /* ─── Column Grouping ───────────────────────────────────────────────────────── */
