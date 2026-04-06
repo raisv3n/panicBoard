@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PanicBoard</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="style.css?v=6">
+</head>
+<body data-theme="dark">
+
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">
+        <span class="logo-icon">⏱</span>
+        <h1>PanicBoard</h1>
+      </div>
+      <div class="live-badge">
+        <span class="live-dot"></span>
+        <span id="live-clock">LIVE</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <span id="stale-indicator" class="stale-indicator"></span>
+      <button id="btn-refresh" class="btn-refresh" onclick="handleRefresh()" title="Refresh board">↻</button>
+      <div class="data-btns">
+        <label class="btn-data" title="Import tasks from file">
+          ↑ Import
+          <input type="file" id="import-input" accept=".json" onchange="importTasks(event)" style="display:none">
+        </label>
+        <button class="btn-data" onclick="exportTasks()" title="Export tasks to file">
+          ↓ Export
+        </button>
+        <button class="btn-data btn-data--warn" onclick="openClearModal()" title="Clear all data">
+          ✕ Clear
+        </button>
+      </div>
+      <div class="view-toggle">
+        <button id="btn-kanban" class="view-btn active" onclick="setView('kanban')">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+            <rect x="0" y="0" width="4" height="14" rx="1"/>
+            <rect x="5" y="0" width="4" height="14" rx="1"/>
+            <rect x="10" y="0" width="4" height="14" rx="1"/>
+          </svg>
+          Board
+        </button>
+        <button id="btn-timeline" class="view-btn" onclick="setView('timeline')">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+            <rect x="0" y="6" width="14" height="2" rx="1"/>
+            <circle cx="3" cy="7" r="2.5"/>
+            <circle cx="7" cy="7" r="2.5"/>
+            <circle cx="11" cy="7" r="2.5"/>
+          </svg>
+          Timeline
+        </button>
+      </div>
+      <button class="btn-add-task" onclick="openModal()">
+        <span>+</span> New Task
+      </button>
+      <button id="btn-notes" class="btn-theme" onclick="toggleNotesPanel()" title="Notes">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+          <rect x="2" y="1" width="10" height="12" rx="1.5" opacity=".3"/>
+          <rect x="4" y="4" width="6" height="1.5" rx=".75"/>
+          <rect x="4" y="6.5" width="6" height="1.5" rx=".75"/>
+          <rect x="4" y="9" width="4" height="1.5" rx=".75"/>
+        </svg>
+      </button>
+      <button id="btn-theme" class="btn-theme" onclick="toggleTheme()" title="Toggle theme">
+        <span id="theme-icon">☀</span>
+      </button>
+    </div>
+  </header>
+
+  <main id="app">
+    <!-- Horizontal board nav arrows — shown/hidden by updateNavButtons() -->
+    <button class="board-nav-btn board-nav-left hidden" id="board-nav-left" onclick="scrollBoard(-1)" title="Scroll left">‹</button>
+    <div id="board" class="board"></div>
+    <button class="board-nav-btn board-nav-right hidden" id="board-nav-right" onclick="scrollBoard(1)" title="Scroll right">›</button>
+    <div id="timeline-view" class="timeline-view hidden"></div>
+  </main>
+
+  <!-- Notes Panel -->
+  <aside id="notes-panel" class="notes-panel">
+    <div class="notes-header">
+      <span class="notes-title">📝 Notes</span>
+      <button class="btn-data btn-data--warn" onclick="openClearNoteModal()" title="Clear note">✕ Clear</button>
+    </div>
+    <textarea
+      id="notes-textarea"
+      class="notes-textarea"
+      placeholder="Write down ideas..."
+      oninput="saveNote()"
+    ></textarea>
+  </aside>
+
+  <!-- Clear note confirm -->
+  <div id="clear-note-overlay" class="modal-overlay hidden" onclick="closeClearNoteModal()">
+    <div class="modal modal-sm" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Clear Note?</h2>
+      </div>
+      <p class="delete-msg">Clear this note? This cannot be undone.</p>
+      <div class="form-actions">
+        <button class="btn-secondary" onclick="closeClearNoteModal()">Cancel</button>
+        <button class="btn-danger" onclick="confirmClearNote()">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task Preview (read-only) -->
+  <div id="preview-overlay" class="modal-overlay hidden" onclick="closePreview()">
+    <div class="modal" role="dialog" aria-modal="true" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2 id="preview-title"></h2>
+        <button class="modal-close" onclick="closePreview()" aria-label="Close">✕</button>
+      </div>
+      <div id="preview-body" class="preview-body"></div>
+      <div class="form-actions">
+        <button class="btn-secondary" onclick="previewEdit()">✎ Edit</button>
+        <button class="btn-preview-delete" onclick="previewDelete()">✕ Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task Modal -->
+  <div id="modal-overlay" class="modal-overlay hidden" onclick="handleOverlayClick(event)">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <h2 id="modal-heading">New Task</h2>
+        <button class="modal-close" onclick="closeModal()" aria-label="Close">✕</button>
+      </div>
+      <form id="task-form" onsubmit="submitTask(event)" autocomplete="off">
+        <!-- Important toggle comes first, before title -->
+        <div class="form-field-check form-field-check--important">
+          <input type="checkbox" id="f-important">
+          <label for="f-important">🔥 Priority</label>
+        </div>
+        <div class="form-field">
+          <label for="f-title">Title <span class="req">*</span></label>
+          <input id="f-title" type="text" placeholder="What needs to be done?" required>
+        </div>
+        <div class="form-field">
+          <label for="f-desc">Description <span class="optional">optional</span></label>
+          <textarea id="f-desc" placeholder="Add details, links, notes…" rows="3"></textarea>
+        </div>
+        <div class="form-field">
+          <label>Links <span class="optional">optional</span></label>
+          <div id="f-links-list"></div>
+          <button type="button" class="btn-add-link" onclick="addLinkInput('', true)">+ Add link</button>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="f-date">Due Date <span class="optional">optional</span></label>
+            <input id="f-date" type="date">
+          </div>
+          <div class="form-field">
+            <label for="f-time">Due Time <span class="optional">optional</span></label>
+            <input id="f-time" type="time">
+          </div>
+        </div>
+        <div class="form-field-check">
+          <input type="checkbox" id="f-queue">
+          <label for="f-queue">Queue</label>
+        </div>
+        <div class="form-field-check">
+          <input type="checkbox" id="f-tag">
+          <label for="f-tag">Deliverables</label>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn-primary" id="submit-btn">Add Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Clear all data confirm -->
+  <div id="clear-overlay" class="modal-overlay hidden" onclick="closeClearModal()">
+    <div class="modal modal-sm" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Clear All Data?</h2>
+      </div>
+      <p class="delete-msg">Are you sure you want to clear all data? This action cannot be undone.</p>
+      <div class="form-actions">
+        <button class="btn-secondary" onclick="closeClearModal()">Cancel</button>
+        <button class="btn-danger" onclick="confirmClear()">Clear Data</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reset board order confirm -->
+  <div id="reset-order-overlay" class="modal-overlay hidden" onclick="closeResetOrderModal()">
+    <div class="modal modal-sm" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Reset Order?</h2>
+      </div>
+      <p class="delete-msg">Reset this board to time-based order? Manual positions will be lost.</p>
+      <div class="form-actions">
+        <button class="btn-secondary" onclick="closeResetOrderModal()">Cancel</button>
+        <button class="btn-primary" onclick="confirmResetOrder()">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete confirm -->
+  <div id="delete-overlay" class="modal-overlay hidden" onclick="closeDeleteModal()">
+    <div class="modal modal-sm" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Delete Task?</h2>
+      </div>
+      <p class="delete-msg">This action cannot be undone.</p>
+      <div class="form-actions">
+        <button class="btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+        <button class="btn-danger" onclick="confirmDelete()">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty state for no tasks -->
+  <div id="empty-hint" class="empty-hint hidden">
+    <div class="empty-inner">
+      <div class="empty-icon">📋</div>
+      <h3>No tasks yet</h3>
+      <p>Add your first task and start tracking deadlines.</p>
+      <button class="btn-add-task" onclick="openModal()">+ New Task</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
