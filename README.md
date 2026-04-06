@@ -2,6 +2,8 @@
 
 A lightweight, deadline-focused Kanban board for tracking tasks with urgency. Built with vanilla HTML, CSS, and JavaScript — no frameworks, no build tools.
 
+**Live demo:** [https://panicboard.raisv.com](https://panicboard.raisv.com)
+
 ![Board View](assets/board-view.png)
 ![Timeline View](assets/timeline-view.png)
 ![New Task](assets/new-task.png)
@@ -27,6 +29,12 @@ A lightweight, deadline-focused Kanban board for tracking tasks with urgency. Bu
 
 ## Getting Started
 
+### Use the live app
+
+Visit [https://panicboard.raisv.com](https://panicboard.raisv.com) — no install needed.
+
+### Run locally
+
 No install or build step required. Just open `index.html` in a browser.
 
 ```bash
@@ -50,7 +58,7 @@ npx serve .
 
 ## Data
 
-All data is stored in `localStorage`. Nothing is sent to a server.
+All data is stored in your browser's `localStorage`. Nothing is sent to a server — your data never leaves your device.
 
 | Key | Contents |
 |---|---|
@@ -58,7 +66,17 @@ All data is stored in `localStorage`. Nothing is sent to a server.
 | `panicboard_note` | Notes scratchpad content |
 | `panicboard_theme` | Light / dark preference |
 
-Use **Export** to save a JSON backup and **Import** to restore it on any device.
+### Important: Data is domain-specific
+
+Because localStorage is tied to the domain, data does **not** carry over between different URLs automatically. For example:
+
+- `localhost:3000` → its own storage
+- `your-app.vercel.app` → separate storage
+- `panicboard.raisv.com` → separate storage
+
+### Migrating data between domains
+
+Use **Export** to download your tasks as a `.json` file, then **Import** that file on the new domain to restore everything. This also works as a general backup strategy across any device or browser.
 
 ## Project Structure
 
