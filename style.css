@@ -14,6 +14,7 @@
   --accent:       #6366f1;
   --accent-hover: #818cf8;
   --important:    #f97316; /* orange — priority badge & card border */
+  --scheduled:    #7c3aed; /* lavender — scheduled badge & card border */
 }
 
 /* ─── Dark Theme ────────────────────────────────────────────────────────────── */
@@ -369,7 +370,7 @@ body {
 .col-label {
   font-size: 13px;
   font-weight: 700;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
 }
@@ -424,7 +425,8 @@ body {
 .col-add-btn:hover { background: var(--accent-dim); color: var(--accent); }
 
 .col-overdue .col-badge { background: var(--crit-bg); border-color: var(--crit-border); color: var(--crit); }
-.col-today   .col-label { color: var(--accent-hover); }
+.col-overdue .col-label { color: var(--overdue-color); }
+.col-today   .col-label { color: var(--backlog-label); }
 
 .col-cards {
   padding: 10px;
@@ -796,6 +798,18 @@ body[data-theme="dark"] .form-field input[type="time"] { color-scheme: dark; }
 body[data-theme="light"] .form-field input[type="date"],
 body[data-theme="light"] .form-field input[type="time"] { color-scheme: light; }
 
+.form-field input[type="date"]::-webkit-calendar-picker-indicator,
+.form-field input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: none;
+  cursor: pointer;
+  opacity: .55;
+}
+body[data-theme="dark"] .form-field input[type="date"]::-webkit-calendar-picker-indicator,
+body[data-theme="dark"] .form-field input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: .45;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -866,13 +880,19 @@ body[data-theme="light"] .form-field input[type="time"] { color-scheme: light; }
   width: fit-content;
 }
 
-.preview-badge--queue {
-  color: #0891b2;
-  background: color-mix(in srgb, #0891b2 12%, transparent);
+.preview-badge svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
 }
-body[data-theme="dark"] .preview-badge--queue {
-  color: #22d3ee;
-  background: color-mix(in srgb, #22d3ee 12%, transparent);
+
+.preview-badge--scheduled {
+  color: #7c3aed;
+  background: color-mix(in srgb, #7c3aed 12%, transparent);
+}
+body[data-theme="dark"] .preview-badge--scheduled {
+  color: #a78bfa;
+  background: color-mix(in srgb, #a78bfa 12%, transparent);
 }
 
 .preview-field { display: flex; flex-direction: column; gap: 3px; }
@@ -963,12 +983,14 @@ body[data-theme="dark"] .preview-badge--queue {
 body[data-theme="light"] .card.important { background: #fff7ed; }
 body[data-theme="dark"]  .card.important { background: #1c0f00; }
 
-/* ─── Tag: Deliverables (card accent) ──────────────────────────────────────── */
-/* Cyan border for Queue — wins over urgency and important */
-body[data-theme="light"] .card.tag-queue { border-left-color: #0891b2 !important; }
-body[data-theme="dark"]  .card.tag-queue { border-left-color: #22d3ee !important; }
+/* ─── Scheduled card indicator ─────────────────────────────────────────────── */
+/* Lavender left border + subtle fill for scheduled cards */
+.card.scheduled { border-left-color: #7c3aed !important; }
+body[data-theme="light"] .card.scheduled { background: #f5f3ff; }
+body[data-theme="dark"]  .card.scheduled { background: #1a0e30; }
 
-/* Blue border for Deliverables — wins over Queue */
+/* ─── Tag: Deliverables (card accent) ──────────────────────────────────────── */
+/* Blue border for Deliverables — wins over Scheduled and Important */
 body[data-theme="light"] .card.tag-deliverables { border-left-color: #2563eb !important; }
 body[data-theme="dark"]  .card.tag-deliverables { border-left-color: #60a5fa !important; }
 
@@ -991,15 +1013,27 @@ body[data-theme="dark"]  .card.tag-deliverables { border-left-color: #60a5fa !im
   line-height: 1.5;
 }
 
-.pill-queue {
-  color: #0891b2;
-  background: #ecfeff;
-  border: 1px solid #a5f3fc;
+.card-tag-pill svg {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
 }
-body[data-theme="dark"] .pill-queue {
-  color: #22d3ee;
-  background: #042830;
-  border-color: #0e7490;
+
+.pill-important {
+  color: var(--important);
+  background: color-mix(in srgb, var(--important) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--important) 30%, transparent);
+}
+
+.pill-scheduled {
+  color: #7c3aed;
+  background: #f5f3ff;
+  border: 1px solid #c4b5fd;
+}
+body[data-theme="dark"] .pill-scheduled {
+  color: #a78bfa;
+  background: #1e103a;
+  border-color: #5b21b6;
 }
 
 .pill-deliverables {
@@ -1011,12 +1045,6 @@ body[data-theme="dark"] .pill-deliverables {
   color: #60a5fa;
   background: #0c1f3a;
   border-color: #1e4a7a;
-}
-
-.pill-deliverables::before {
-  content: '●';
-  font-size: 7px;
-  opacity: .8;
 }
 
 /* ─── Tag Checkbox (modal form) ─────────────────────────────────────────────── */
@@ -1041,11 +1069,26 @@ body[data-theme="dark"] .pill-deliverables {
   color: var(--text-muted);
   cursor: pointer;
   user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
-/* Important toggle gets orange accent and slightly bolder label */
+.form-field-check label svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* Important toggle gets orange accent */
 .form-field-check--important input[type="checkbox"] { accent-color: var(--important); }
-.form-field-check--important label { color: var(--text); font-weight: 600; }
+.form-field-check--important label { font-weight: 600; }
+
+/* Scheduled toggle gets lavender accent */
+.form-field-check--scheduled input[type="checkbox"] { accent-color: #7c3aed; }
+
+/* Deliverables toggle gets blue accent */
+.form-field-check--deliverables input[type="checkbox"] { accent-color: #2563eb; }
 
 /* ─── Board Nav Arrows ───────────────────────────────────────────────────────── */
 .board-nav-btn {
@@ -1318,17 +1361,20 @@ body[data-theme="dark"] .pill-deliverables {
   }
   .card:hover { transform: none; }
 
-  /* Timeline: vertical stack */
-  .timeline-view { padding: 12px; }
-  .timeline-scroll { overflow-x: visible; }
+  /* Timeline: vertical stack, full width */
+  .timeline-view { padding: 12px; min-height: auto; }
+  .timeline-scroll { overflow-x: visible; padding-bottom: 0; }
   .timeline-track {
     flex-direction: column;
+    min-width: 0;
     padding-top: 0;
+    gap: 16px;
   }
   .timeline-axis { display: none; }
   .timeline-col {
     width: 100%;
-    padding: 0 0 16px;
+    flex-shrink: 1;
+    padding: 0;
     position: relative;
   }
   .timeline-marker {
@@ -1342,6 +1388,7 @@ body[data-theme="dark"] .pill-deliverables {
   .timeline-dot { order: -1; }
   .timeline-date { font-size: 11px; }
   .timeline-cards { padding-top: 0; }
+  .timeline-cards .card { width: 100%; }
 
   /* Notes panel: full screen */
   .notes-panel {

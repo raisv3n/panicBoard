@@ -1,3 +1,11 @@
+/* ─── SVG Icons ──────────────────────────────────────────────────────────────── */
+const ICON = {
+  star: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z"/></svg>',
+  calendar: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z"/></svg>',
+  docDown: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m.75 12 3 3m0 0 3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>',
+  pencil: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/></svg>',
+};
+
 /* ─── State ─────────────────────────────────────────────────────────────────── */
 const STORAGE_KEY      = 'panicboard_v1';
 const THEME_KEY        = 'panicboard_theme';
@@ -322,12 +330,15 @@ function renderKanban() {
       // 1. Priority first
       const impDiff = b.isImportant - a.isImportant;
       if (impDiff !== 0) return impDiff;
-      // 2. Manual order (if set on both)
+      // 2. Scheduled second
+      const schDiff = b.isScheduled - a.isScheduled;
+      if (schDiff !== 0) return schDiff;
+      // 3. Manual order (if set on both)
       const aHas = a.manualOrder != null, bHas = b.manualOrder != null;
       if (aHas && bHas) return a.manualOrder - b.manualOrder;
       if (aHas) return -1;
       if (bHas) return 1;
-      // 3. Fallback to deadline
+      // 4. Fallback to deadline
       return getDeadlineMs(a) - getDeadlineMs(b);
     });
     board.appendChild(makeKanbanColumn(col, colTasks));
@@ -347,7 +358,7 @@ function makeKanbanColumn(col, colTasks) {
     if (!dragPlaceholder) return;
     // Insert placeholder at the nearest valid position
     const draggedTask    = tasks.find(t => t.id === draggedId);
-    const afterEl        = getDragAfterElement(cardsEl, e.clientY, draggedTask?.isImportant);
+    const afterEl        = getDragAfterElement(cardsEl, e.clientY, draggedTask?.isImportant, draggedTask?.isScheduled);
     if (afterEl == null) {
       cardsEl.appendChild(dragPlaceholder);
     } else {
@@ -364,7 +375,12 @@ function makeKanbanColumn(col, colTasks) {
     dropTaskIntoCol(col, el);
   });
 
-  const icon       = col.type === 'overdue' ? '🔴 ' : col.type === 'today' ? '📌 ' : col.type === 'backlog' ? '📥 ' : '';
+  const iconSvg = {
+    today:   '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0;vertical-align:-1px"><path fill-rule="evenodd" d="M17.303 5.197A7.5 7.5 0 0 0 6.697 15.803a.75.75 0 0 1-1.061 1.061A9 9 0 1 1 21 10.5a.75.75 0 0 1-1.5 0c0-1.92-.732-3.839-2.197-5.303Zm-2.121 2.121a4.5 4.5 0 0 0-6.364 6.364.75.75 0 1 1-1.06 1.06A6 6 0 1 1 18 10.5a.75.75 0 0 1-1.5 0c0-1.153-.44-2.303-1.318-3.182Zm-3.634 1.314a.75.75 0 0 1 .82.311l5.228 7.917a.75.75 0 0 1-.777 1.148l-2.097-.43 1.045 3.9a.75.75 0 0 1-1.45.388l-1.044-3.899-1.601 1.42a.75.75 0 0 1-1.247-.606l.569-9.47a.75.75 0 0 1 .554-.68Z" clip-rule="evenodd"/></svg>',
+    backlog: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0;vertical-align:-1px"><path fill-rule="evenodd" d="M1.5 9.832v1.793c0 1.036.84 1.875 1.875 1.875h17.25c1.035 0 1.875-.84 1.875-1.875V9.832a3 3 0 0 0-.722-1.952l-3.285-3.832A3 3 0 0 0 16.215 3h-8.43a3 3 0 0 0-2.278 1.048L2.222 7.88A3 3 0 0 0 1.5 9.832ZM7.785 4.5a1.5 1.5 0 0 0-1.139.524L3.881 8.25h3.165a3 3 0 0 1 2.496 1.336l.164.246a1.5 1.5 0 0 0 1.248.668h2.092a1.5 1.5 0 0 0 1.248-.668l.164-.246a3 3 0 0 1 2.496-1.336h3.165l-2.765-3.226a1.5 1.5 0 0 0-1.139-.524h-8.43Z" clip-rule="evenodd"/><path d="M2.813 15c-.725 0-1.313.588-1.313 1.313V18a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3v-1.688c0-.724-.588-1.312-1.313-1.312h-4.233a3 3 0 0 0-2.496 1.336l-.164.246a1.5 1.5 0 0 1-1.248.668h-2.092a1.5 1.5 0 0 1-1.248-.668l-.164-.246A3 3 0 0 0 7.046 15H2.812Z"/></svg>',
+    overdue: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0;vertical-align:-1px"><circle cx="12" cy="12" r="10"/></svg>',
+  };
+  const icon = iconSvg[col.type] || '';
   const hasManual  = colTasks.some(t => t.manualOrder != null);
   const resetBtn   = hasManual
     ? `<button class="col-reset-btn" onclick="event.stopPropagation(); openResetOrderModal('${col.id}')" title="Reset to time order">↺</button>`
@@ -419,12 +435,15 @@ function renderTimeline() {
       // 1. Priority first
       const impDiff = b.isImportant - a.isImportant;
       if (impDiff !== 0) return impDiff;
-      // 2. Manual order (if set on both)
+      // 2. Scheduled second
+      const schDiff = b.isScheduled - a.isScheduled;
+      if (schDiff !== 0) return schDiff;
+      // 3. Manual order (if set on both)
       const aHas = a.manualOrder != null, bHas = b.manualOrder != null;
       if (aHas && bHas) return a.manualOrder - b.manualOrder;
       if (aHas) return -1;
       if (bHas) return 1;
-      // 3. Fallback to deadline
+      // 4. Fallback to deadline
       return getDeadlineMs(a) - getDeadlineMs(b);
     });
 
@@ -472,9 +491,9 @@ function renderTimeline() {
 function cardHTML(task) {
   const state         = calculateTaskState(task);
   const pulsCls       = state.pulsing ? ' pulsing' : '';
-  const queueCls      = task.isQueue ? ' tag-queue' : '';
   const tagCls        = task.tag === 'Deliverables' ? ' tag-deliverables' : '';
   const importantCls  = task.isImportant ? ' important' : '';
+  const scheduledCls  = task.isScheduled ? ' scheduled' : '';
   const descPart = (() => {
     if (!task.description) return '';
     if (task.description.includes('\n')) {
@@ -486,14 +505,15 @@ function cardHTML(task) {
     return `<div class="card-desc">${escHtml(task.description)}</div>`;
   })();
   const timePart   = task.dueDate && task.dueTime ? ` · ${fmtTime12(task.dueTime)}` : '';
-  // Tags: Queue (cyan) first, Deliverables (blue) second
+  // Tags: Scheduled (lavender) first, Deliverables (blue) second
   const pillParts = [];
-  if (task.isQueue)              pillParts.push(`<span class="card-tag-pill pill-queue">Queue</span>`);
-  if (task.tag === 'Deliverables') pillParts.push(`<span class="card-tag-pill pill-deliverables">Deliverables</span>`);
+  if (task.isImportant)            pillParts.push(`<span class="card-tag-pill pill-important">${ICON.star} Priority</span>`);
+  if (task.isScheduled)             pillParts.push(`<span class="card-tag-pill pill-scheduled">${ICON.calendar} Scheduled</span>`);
+  if (task.tag === 'Deliverables') pillParts.push(`<span class="card-tag-pill pill-deliverables">${ICON.docDown} Deliverables</span>`);
   const tagPart = pillParts.length ? `<div class="card-tag">${pillParts.join('')}</div>` : '';
 
   return `
-    <div class="card ${state.cls}${pulsCls}${queueCls}${tagCls}${importantCls}"
+    <div class="card ${state.cls}${pulsCls}${tagCls}${importantCls}${scheduledCls}"
          id="card-${task.id}"
          draggable="true"
          onclick="openPreview('${task.id}')"
@@ -583,12 +603,12 @@ function dropTaskIntoCol(col, colEl) {
 
 // Find the card element that the dragged card should be inserted before,
 // based on cursor Y position. Non-important cards cannot go above important ones.
-function getDragAfterElement(container, y, isImportantDragged) {
+function getDragAfterElement(container, y, isImportantDragged, isScheduledDragged) {
   const allCards   = [...container.querySelectorAll('.card:not(.dragging)')];
-  // Non-priority cards may only insert among other non-priority cards
-  const candidates = isImportantDragged
+  // Non-priority, non-scheduled cards may only insert among other non-priority, non-scheduled cards
+  const candidates = (isImportantDragged || isScheduledDragged)
     ? allCards
-    : allCards.filter(c => !c.classList.contains('important'));
+    : allCards.filter(c => !c.classList.contains('important') && !c.classList.contains('scheduled'));
 
   return candidates.reduce((closest, child) => {
     const box    = child.getBoundingClientRect();
@@ -691,8 +711,8 @@ function openEdit(taskId) {
   document.getElementById('f-date').value  = task.dueDate;
   document.getElementById('f-time').value  = task.dueTime || '';
   document.getElementById('f-tag').checked       = task.tag === 'Deliverables';
-  document.getElementById('f-queue').checked     = !!task.isQueue;
-  document.getElementById('f-important').checked = !!task.isImportant;
+  document.getElementById('f-scheduled').checked  = !!task.isScheduled;
+  document.getElementById('f-important').checked  = !!task.isImportant;
   renderLinkInputs(task.links || []);
   show('modal-overlay');
   setTimeout(() => document.getElementById('f-title').focus(), 80);
@@ -718,7 +738,7 @@ function submitTask(e) {
   const date        = document.getElementById('f-date').value;
   const time        = document.getElementById('f-time').value;
   const tag         = document.getElementById('f-tag').checked ? 'Deliverables' : null;
-  const isQueue     = document.getElementById('f-queue').checked;
+  const isScheduled = document.getElementById('f-scheduled').checked;
   const isImportant = document.getElementById('f-important').checked;
   const links       = collectLinks();
   if (!title) return;
@@ -726,7 +746,7 @@ function submitTask(e) {
   pushHistory();
   if (editingId) {
     const task = tasks.find(t => t.id === editingId);
-    if (task) Object.assign(task, { title, description: desc, dueDate: date, dueTime: time, tag, isImportant, isQueue, links, isBacklog: !date });
+    if (task) Object.assign(task, { title, description: desc, dueDate: date, dueTime: time, tag, isImportant, isScheduled, links, isBacklog: !date });
   } else {
     tasks.push({
       id:          Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
@@ -736,7 +756,7 @@ function submitTask(e) {
       dueTime:     time,
       tag,
       isImportant,
-      isQueue,
+      isScheduled,
       links,
       isBacklog:   !date,
       createdAt:   new Date().toISOString()
@@ -875,10 +895,10 @@ function openPreview(taskId) {
   const rows = [];
 
   if (task.isImportant) {
-    rows.push(`<div class="preview-badge">🔥 Priority</div>`);
+    rows.push(`<div class="preview-badge">${ICON.star} Priority</div>`);
   }
-  if (task.isQueue) {
-    rows.push(`<div class="preview-badge preview-badge--queue">Queue</div>`);
+  if (task.isScheduled) {
+    rows.push(`<div class="preview-badge preview-badge--scheduled">${ICON.calendar} Scheduled</div>`);
   }
 
   if (task.description) {
@@ -907,10 +927,11 @@ function openPreview(taskId) {
       <p class="preview-value">${shortDate(task.dueDate)}${timeStr}</p>
     </div>`);
 
-  // Tags: Queue (cyan) first, Deliverables (blue) second
+  // Tags: Scheduled (lavender) first, Deliverables (blue) second
   const previewPills = [];
-  if (task.isQueue)              previewPills.push(`<span class="card-tag-pill pill-queue">Queue</span>`);
-  if (task.tag === 'Deliverables') previewPills.push(`<span class="card-tag-pill pill-deliverables">Deliverables</span>`);
+  if (task.isImportant)            previewPills.push(`<span class="card-tag-pill pill-important">${ICON.star} Priority</span>`);
+  if (task.isScheduled)             previewPills.push(`<span class="card-tag-pill pill-scheduled">${ICON.calendar} Scheduled</span>`);
+  if (task.tag === 'Deliverables') previewPills.push(`<span class="card-tag-pill pill-deliverables">${ICON.docDown} Deliverables</span>`);
   if (previewPills.length) {
     rows.push(`<div class="preview-field">${previewPills.join('')}</div>`);
   }
