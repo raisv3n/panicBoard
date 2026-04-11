@@ -53,6 +53,7 @@ function applyTheme(theme) {
   document.body.dataset.theme = theme;
   const icon = document.getElementById('theme-icon');
   if (icon) icon.textContent = theme === 'dark' ? '☀' : '☾';
+  syncMobileThemeIcon();
   localStorage.setItem(THEME_KEY, theme);
 }
 
@@ -773,6 +774,7 @@ function setView(v) {
   currentView = v;
   document.getElementById('btn-kanban').classList.toggle('active', v === 'kanban');
   document.getElementById('btn-timeline').classList.toggle('active', v === 'timeline');
+  syncMobileViewButtons();
   renderBoard();
   updateNavButtons();
 }
@@ -1034,12 +1036,12 @@ function escHtml(s) {
 document.addEventListener('click', e => {
   const panel = document.getElementById('notes-panel');
   if (!panel?.classList.contains('open')) return;
-  if (e.target.closest('#notes-panel') || e.target.closest('#btn-notes') || e.target.closest('#mobile-menu')) return;
+  if (e.target.closest('#notes-panel') || e.target.closest('#btn-notes') || e.target.closest('#mobile-menu') || e.target.closest('.btn-mobile-menu')) return;
   closeNotesPanel();
 });
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeModal(); closeDeleteModal(); closePreview(); closeClearNoteModal(); closeResetOrderModal(); closeNotesPanel(); }
+  if (e.key === 'Escape') { closeModal(); closeDeleteModal(); closePreview(); closeClearNoteModal(); closeResetOrderModal(); closeNotesPanel(); closeMobileMenu(); }
   if ((e.key === 'n' || e.key === 'N') && !e.ctrlKey && !e.metaKey) {
     const tag = document.activeElement.tagName;
     if (tag !== 'INPUT' && tag !== 'TEXTAREA') openModal();
@@ -1121,6 +1123,35 @@ function initBoardDragScroll() {
 
   // Re-check on window resize in case overflow state changes
   window.addEventListener('resize', updateNavButtons);
+}
+
+/* ─── Mobile Menu ────────────────────────────────────────────────────────────── */
+function toggleMobileMenu() {
+  const menu = document.getElementById('mobile-menu');
+  const btn  = document.getElementById('btn-mobile-menu');
+  const open = menu.classList.toggle('open');
+  btn.classList.toggle('open', open);
+  syncMobileViewButtons();
+  syncMobileThemeIcon();
+}
+
+function closeMobileMenu() {
+  const menu = document.getElementById('mobile-menu');
+  const btn  = document.getElementById('btn-mobile-menu');
+  menu.classList.remove('open');
+  btn.classList.remove('open');
+}
+
+function syncMobileViewButtons() {
+  const kb = document.getElementById('btn-kanban-mobile');
+  const tl = document.getElementById('btn-timeline-mobile');
+  if (kb) kb.classList.toggle('active', currentView === 'kanban');
+  if (tl) tl.classList.toggle('active', currentView === 'timeline');
+}
+
+function syncMobileThemeIcon() {
+  const el = document.getElementById('theme-icon-mobile');
+  if (el) el.textContent = document.body.dataset.theme === 'dark' ? '☀ Toggle Theme' : '☾ Toggle Theme';
 }
 
 /* ─── Go ─────────────────────────────────────────────────────────────────────── */

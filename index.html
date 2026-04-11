@@ -68,8 +68,67 @@
       <button id="btn-theme" class="btn-theme" onclick="toggleTheme()" title="Toggle theme">
         <span id="theme-icon">☀</span>
       </button>
+      <button id="btn-mobile-menu" class="btn-mobile-menu" onclick="toggleMobileMenu()" aria-label="Menu">
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+        <span class="hamburger-line"></span>
+      </button>
     </div>
   </header>
+
+  <!-- Mobile Menu Overlay -->
+  <div id="mobile-menu" class="mobile-menu" onclick="closeMobileMenu()">
+    <div class="mobile-menu-content" onclick="event.stopPropagation()">
+      <div class="mobile-menu-header">
+        <span class="mobile-menu-title">Menu</span>
+        <button class="modal-close" onclick="closeMobileMenu()" aria-label="Close">✕</button>
+      </div>
+      <button class="mobile-menu-item" onclick="openModal(); closeMobileMenu()">
+        <span>+ New Task</span>
+      </button>
+      <div class="mobile-menu-section">
+        <div class="view-toggle mobile-view-toggle">
+          <button id="btn-kanban-mobile" class="view-btn active" onclick="setView('kanban'); closeMobileMenu()">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+              <rect x="0" y="0" width="4" height="14" rx="1"/>
+              <rect x="5" y="0" width="4" height="14" rx="1"/>
+              <rect x="10" y="0" width="4" height="14" rx="1"/>
+            </svg>
+            Board
+          </button>
+          <button id="btn-timeline-mobile" class="view-btn" onclick="setView('timeline'); closeMobileMenu()">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+              <rect x="0" y="6" width="14" height="2" rx="1"/>
+              <circle cx="3" cy="7" r="2.5"/>
+              <circle cx="7" cy="7" r="2.5"/>
+              <circle cx="11" cy="7" r="2.5"/>
+            </svg>
+            Timeline
+          </button>
+        </div>
+      </div>
+      <button class="mobile-menu-item" onclick="toggleNotesPanel(); closeMobileMenu()">
+        <span>📝 Notes</span>
+      </button>
+      <button class="mobile-menu-item" onclick="toggleTheme(); closeMobileMenu()">
+        <span id="theme-icon-mobile">☀ Toggle Theme</span>
+      </button>
+      <button class="mobile-menu-item" onclick="handleRefresh(); closeMobileMenu()">
+        <span>↻ Refresh</span>
+      </button>
+      <div class="mobile-menu-divider"></div>
+      <label class="mobile-menu-item" title="Import tasks from file">
+        <span>↑ Import</span>
+        <input type="file" id="import-input-mobile" accept=".json" onchange="importTasks(event)" style="display:none">
+      </label>
+      <button class="mobile-menu-item" onclick="exportTasks(); closeMobileMenu()">
+        <span>↓ Export</span>
+      </button>
+      <button class="mobile-menu-item mobile-menu-item--danger" onclick="openClearModal(); closeMobileMenu()">
+        <span>✕ Clear All Data</span>
+      </button>
+    </div>
+  </div>
 
   <main id="app">
     <!-- Horizontal board nav arrows — shown/hidden by updateNavButtons() -->
@@ -78,6 +137,9 @@
     <button class="board-nav-btn board-nav-right hidden" id="board-nav-right" onclick="scrollBoard(1)" title="Scroll right">›</button>
     <div id="timeline-view" class="timeline-view hidden"></div>
   </main>
+
+  <!-- Floating Add Task Button (mobile only) -->
+  <button class="fab-add-task" onclick="openModal()" aria-label="New Task">+</button>
 
   <!-- Notes Panel -->
   <aside id="notes-panel" class="notes-panel">
