@@ -11,10 +11,10 @@ A lightweight, deadline-focused Kanban board for tracking tasks with urgency. Bu
 ## Features
 
 - **Kanban & Timeline views** — switch between a columnar board grouped by date and a horizontal timeline
-- **Task management** — create, edit, and delete tasks with title, description, links, due date/time, and tag
-- **Backlog board** `NEW` — permanent first column for unscheduled or postponed tasks; due date is optional
-- **Per-board add button** `NEW` — "+" in each board header opens the task modal pre-filled with that board's date
-- **Priority sorting** — mark tasks as 🔥 Priority to pin them to the top of their column, above time-sorted tasks
+- **Task management** — create, edit, and delete tasks with title, description, links, due date/time, Priority, Scheduled, and Deliverables tags
+- **Backlog board** — permanent first column for unscheduled or postponed tasks; due date is optional
+- **Per-board add button** — "+" in each board header opens the task modal pre-filled with that board's date
+- **Priority & Scheduled sorting** — mark tasks as Priority (top) or Scheduled (second) to pin them above time-sorted tasks
 - **Manual reordering** — drag cards within a column to set a custom order; reset anytime
 - **Read-only preview** — click any card to open a quick preview before deciding to edit or delete
 - **Drag and drop** — move cards between columns, including to and from Backlog
@@ -24,6 +24,7 @@ A lightweight, deadline-focused Kanban board for tracking tasks with urgency. Bu
 - **Countdown timers** — live countdowns on each card (days, hours, minutes)
 - **Stale indicator** — shows how long since the board was last refreshed
 - **Notes panel** — persistent scratchpad for quick ideas, auto-saves as you type
+- **Responsive design** — full mobile support with hamburger menu, stacked columns, and floating add button
 - **Light / Dark theme** — persisted across sessions
 - **Toast notifications** — non-blocking feedback for actions
 
