@@ -1034,7 +1034,7 @@ function escHtml(s) {
 document.addEventListener('click', e => {
   const panel = document.getElementById('notes-panel');
   if (!panel?.classList.contains('open')) return;
-  if (e.target.closest('#notes-panel') || e.target.closest('#btn-notes')) return;
+  if (e.target.closest('#notes-panel') || e.target.closest('#btn-notes') || e.target.closest('#mobile-menu')) return;
   closeNotesPanel();
 });
 
