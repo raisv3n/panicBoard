@@ -52,34 +52,9 @@ function loadTheme() {
 function applyTheme(theme) {
   document.body.dataset.theme = theme;
   const icon = document.getElementById('theme-icon');
-  const iconMobile = document.getElementById('theme-icon-mobile');
-  const iconText = theme === 'dark' ? '☀' : '☾';
-  if (icon) icon.textContent = iconText;
-  if (iconMobile) iconMobile.textContent = iconText;
+  if (icon) icon.textContent = theme === 'dark' ? '☀' : '☾';
   localStorage.setItem(THEME_KEY, theme);
 }
-
-/* ─── Mobile Menu ───────────────────────────────────────────────────────────── */
-function toggleMobileMenu() {
-  const menu = document.getElementById('mobile-menu');
-  if (!menu) return;
-  menu.style.display = '';
-  menu.classList.toggle('hidden');
-  menu.classList.toggle('open');
-}
-
-function closeMobileMenu() {
-  const menu = document.getElementById('mobile-menu');
-  if (!menu) return;
-  menu.classList.add('hidden');
-  menu.classList.remove('open');
-}
-
-document.addEventListener('click', e => {
-  if (!e.target.closest('#mobile-menu') && !e.target.closest('.mobile-menu-btn')) {
-    closeMobileMenu();
-  }
-});
 
 function toggleTheme() {
   const next = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
@@ -975,16 +950,10 @@ function saveNote() {
 }
 
 function toggleNotesPanel() {
-  const menu = document.getElementById('mobile-menu');
-  if (menu) {
-    menu.classList.add('hidden');
-    menu.classList.remove('open');
-    menu.style.display = 'none';
-  }
   const panel = document.getElementById('notes-panel');
   const btn   = document.getElementById('btn-notes');
   const open  = panel.classList.toggle('open');
-  if (btn) btn.classList.toggle('active', open);
+  btn.classList.toggle('active', open);
 }
 
 function closeNotesPanel() {
@@ -993,62 +962,6 @@ function closeNotesPanel() {
   panel.classList.remove('open');
   btn.classList.remove('active');
 }
-
-/* ─── Notes Panel Swipe to Dismiss ──────────────────────────────────────────── */
-(function initNotesSwipe() {
-  const panel = document.getElementById('notes-panel');
-  if (!panel) return;
-
-  let startX = 0, startY = 0, currentX = 0, isDragging = false, isHorizontal = null;
-
-  panel.addEventListener('touchstart', e => {
-    // Only intercept if panel is open
-    if (!panel.classList.contains('open')) return;
-    startX = e.touches[0].clientX;
-    startY = e.touches[0].clientY;
-    isDragging = true;
-    isHorizontal = null;
-    panel.style.transition = 'none';
-  }, { passive: true });
-
-  panel.addEventListener('touchmove', e => {
-    if (!isDragging) return;
-    const dx = e.touches[0].clientX - startX;
-    const dy = e.touches[0].clientY - startY;
-
-    // Determine direction on first move
-    if (isHorizontal === null) {
-      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 8) {
-        isHorizontal = true;
-      } else if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 8) {
-        isHorizontal = false;
-      }
-      return;
-    }
-
-    if (!isHorizontal) return;
-
-    // Only allow swiping right (positive dx)
-    if (dx > 0) {
-      e.preventDefault();
-      currentX = dx;
-      panel.style.transform = `translateX(${dx}px)`;
-    }
-  }, { passive: false });
-
-  panel.addEventListener('touchend', () => {
-    if (!isDragging) return;
-    isDragging = false;
-    panel.style.transition = '';
-
-    if (currentX > 80) {
-      closeNotesPanel();
-    } else {
-      panel.style.transform = '';
-    }
-    currentX = 0;
-  });
-})();
 
 function openClearNoteModal()  { show('clear-note-overlay'); }
 function closeClearNoteModal() { hide('clear-note-overlay'); }
@@ -1121,12 +1034,12 @@ function escHtml(s) {
 document.addEventListener('click', e => {
   const panel = document.getElementById('notes-panel');
   if (!panel?.classList.contains('open')) return;
-  if (e.target.closest('#notes-panel') || e.target.closest('#btn-notes') || e.target.closest('#mobile-menu')) return;
+  if (e.target.closest('#notes-panel') || e.target.closest('#btn-notes')) return;
   closeNotesPanel();
 });
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeModal(); closeDeleteModal(); closePreview(); closeClearNoteModal(); closeResetOrderModal(); closeNotesPanel(); closeMobileMenu(); }
+  if (e.key === 'Escape') { closeModal(); closeDeleteModal(); closePreview(); closeClearNoteModal(); closeResetOrderModal(); closeNotesPanel(); }
   if ((e.key === 'n' || e.key === 'N') && !e.ctrlKey && !e.metaKey) {
     const tag = document.activeElement.tagName;
     if (tag !== 'INPUT' && tag !== 'TEXTAREA') openModal();
