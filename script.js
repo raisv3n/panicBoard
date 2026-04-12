@@ -53,7 +53,7 @@ function init() {
 
 /* ─── Theme ─────────────────────────────────────────────────────────────────── */
 function loadTheme() {
-  const saved = localStorage.getItem(THEME_KEY) || 'dark';
+  const saved = localStorage.getItem(THEME_KEY) || 'light';
   applyTheme(saved);
 }
 
