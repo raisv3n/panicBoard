@@ -22,17 +22,22 @@
     </div>
     <div class="header-right">
       <span id="stale-indicator" class="stale-indicator"></span>
-      <button id="btn-refresh" class="btn-refresh" onclick="handleRefresh()" title="Refresh board">↻</button>
+      <button id="btn-refresh" class="btn-refresh" onclick="handleRefresh()" title="Refresh board">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+      </button>
       <div class="data-btns">
         <label class="btn-data" title="Import tasks from file">
-          ↑ Import
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18"/></svg>
+          Import
           <input type="file" id="import-input" accept=".json" onchange="importTasks(event)" style="display:none">
         </label>
         <button class="btn-data" onclick="exportTasks()" title="Export tasks to file">
-          ↓ Export
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"/></svg>
+          Export
         </button>
         <button class="btn-data btn-data--warn" onclick="openClearModal()" title="Clear all data">
-          ✕ Clear
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18 18 6M6 6l12 12"/></svg>
+          Clear
         </button>
       </div>
       <div class="view-toggle">
@@ -55,13 +60,14 @@
         </button>
       </div>
       <button class="btn-add-task" onclick="openModal()">
-        <span>+</span> New Task
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5v15m7.5-7.5h-15"/></svg>
+        New Task
       </button>
       <button id="btn-notes" class="btn-theme" onclick="toggleNotesPanel()" title="Notes">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/></svg>
       </button>
       <button id="btn-theme" class="btn-theme" onclick="toggleTheme()" title="Toggle theme">
-        <span id="theme-icon">☀</span>
+        <span id="theme-icon"></span>
       </button>
       <button id="btn-mobile-menu" class="btn-mobile-menu" onclick="toggleMobileMenu()" aria-label="Menu">
         <span class="hamburger-line"></span>
@@ -79,7 +85,8 @@
         <button class="modal-close" onclick="closeMobileMenu()" aria-label="Close">✕</button>
       </div>
       <button class="mobile-menu-item" onclick="openModal(); closeMobileMenu()">
-        <span>+ New Task</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M12 4.5v15m7.5-7.5h-15"/></svg>
+        <span>New Task</span>
       </button>
       <div class="mobile-menu-section">
         <div class="view-toggle mobile-view-toggle">
@@ -107,21 +114,25 @@
         <span>Notes</span>
       </button>
       <button class="mobile-menu-item" onclick="toggleTheme(); closeMobileMenu()">
-        <span id="theme-icon-mobile">☀ Toggle Theme</span>
+        <span id="theme-icon-mobile"></span>
       </button>
       <button class="mobile-menu-item" onclick="handleRefresh(); closeMobileMenu()">
-        <span>↻ Refresh</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/></svg>
+        <span>Refresh</span>
       </button>
       <div class="mobile-menu-divider"></div>
       <label class="mobile-menu-item" title="Import tasks from file">
-        <span>↑ Import</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18"/></svg>
+        <span>Import</span>
         <input type="file" id="import-input-mobile" accept=".json" onchange="importTasks(event)" style="display:none">
       </label>
       <button class="mobile-menu-item" onclick="exportTasks(); closeMobileMenu()">
-        <span>↓ Export</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"/></svg>
+        <span>Export</span>
       </button>
       <button class="mobile-menu-item mobile-menu-item--danger" onclick="openClearModal(); closeMobileMenu()">
-        <span>✕ Clear All Data</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M6 18 18 6M6 6l12 12"/></svg>
+        <span>Clear All Data</span>
       </button>
     </div>
   </div>

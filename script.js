@@ -57,10 +57,13 @@ function loadTheme() {
   applyTheme(saved);
 }
 
+const SUN_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"/></svg>';
+const MOON_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z"/></svg>';
+
 function applyTheme(theme) {
   document.body.dataset.theme = theme;
   const icon = document.getElementById('theme-icon');
-  if (icon) icon.textContent = theme === 'dark' ? '☀' : '☾';
+  if (icon) icon.innerHTML = theme === 'dark' ? SUN_SVG : MOON_SVG;
   syncMobileThemeIcon();
   localStorage.setItem(THEME_KEY, theme);
 }
@@ -378,7 +381,7 @@ function makeKanbanColumn(col, colTasks) {
   const iconSvg = {
     today:   '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0;vertical-align:-1px"><path fill-rule="evenodd" d="M17.303 5.197A7.5 7.5 0 0 0 6.697 15.803a.75.75 0 0 1-1.061 1.061A9 9 0 1 1 21 10.5a.75.75 0 0 1-1.5 0c0-1.92-.732-3.839-2.197-5.303Zm-2.121 2.121a4.5 4.5 0 0 0-6.364 6.364.75.75 0 1 1-1.06 1.06A6 6 0 1 1 18 10.5a.75.75 0 0 1-1.5 0c0-1.153-.44-2.303-1.318-3.182Zm-3.634 1.314a.75.75 0 0 1 .82.311l5.228 7.917a.75.75 0 0 1-.777 1.148l-2.097-.43 1.045 3.9a.75.75 0 0 1-1.45.388l-1.044-3.899-1.601 1.42a.75.75 0 0 1-1.247-.606l.569-9.47a.75.75 0 0 1 .554-.68Z" clip-rule="evenodd"/></svg>',
     backlog: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0;vertical-align:-1px"><path fill-rule="evenodd" d="M1.5 9.832v1.793c0 1.036.84 1.875 1.875 1.875h17.25c1.035 0 1.875-.84 1.875-1.875V9.832a3 3 0 0 0-.722-1.952l-3.285-3.832A3 3 0 0 0 16.215 3h-8.43a3 3 0 0 0-2.278 1.048L2.222 7.88A3 3 0 0 0 1.5 9.832ZM7.785 4.5a1.5 1.5 0 0 0-1.139.524L3.881 8.25h3.165a3 3 0 0 1 2.496 1.336l.164.246a1.5 1.5 0 0 0 1.248.668h2.092a1.5 1.5 0 0 0 1.248-.668l.164-.246a3 3 0 0 1 2.496-1.336h3.165l-2.765-3.226a1.5 1.5 0 0 0-1.139-.524h-8.43Z" clip-rule="evenodd"/><path d="M2.813 15c-.725 0-1.313.588-1.313 1.313V18a3 3 0 0 0 3 3h15a3 3 0 0 0 3-3v-1.688c0-.724-.588-1.312-1.313-1.312h-4.233a3 3 0 0 0-2.496 1.336l-.164.246a1.5 1.5 0 0 1-1.248.668h-2.092a1.5 1.5 0 0 1-1.248-.668l-.164-.246A3 3 0 0 0 7.046 15H2.812Z"/></svg>',
-    overdue: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0;vertical-align:-1px"><circle cx="12" cy="12" r="10"/></svg>',
+    overdue: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0;vertical-align:-1px"><path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd"/></svg>',
   };
   const icon = iconSvg[col.type] || '';
   const hasManual  = colTasks.some(t => t.manualOrder != null);
@@ -1172,7 +1175,10 @@ function syncMobileViewButtons() {
 
 function syncMobileThemeIcon() {
   const el = document.getElementById('theme-icon-mobile');
-  if (el) el.textContent = document.body.dataset.theme === 'dark' ? '☀ Toggle Theme' : '☾ Toggle Theme';
+  if (!el) return;
+  el.innerHTML = document.body.dataset.theme === 'dark'
+    ? SUN_SVG + ' Toggle Theme'
+    : MOON_SVG + ' Toggle Theme';
 }
 
 /* ─── Go ─────────────────────────────────────────────────────────────────────── */

@@ -1220,6 +1220,17 @@ body[data-theme="dark"] .pill-deliverables {
   overflow: hidden;
 }
 
+#theme-icon-mobile {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#theme-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
 .mobile-menu-header {
   display: flex;
   align-items: center;
@@ -1236,6 +1247,7 @@ body[data-theme="dark"] .pill-deliverables {
 .mobile-menu-item {
   display: flex;
   align-items: center;
+  gap: 8px;
   width: 100%;
   background: transparent;
   border: none;
