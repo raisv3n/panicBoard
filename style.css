@@ -231,7 +231,26 @@ body {
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 2px;
+  padding: 4px;
+}
+
+.btn-data {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 0 10px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background .15s, color .15s;
+  line-height: 1;
 }
 
 .btn-data {
@@ -249,6 +268,26 @@ body {
   font-family: inherit;
   white-space: nowrap;
   transition: background .15s, color .15s;
+  line-height: 1;
+}
+
+.btn-data {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 0 10px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background .15s, color .15s;
+  line-height: 1;
 }
 .btn-data:hover { background: var(--surface-3); color: var(--text); }
 .btn-data--warn { color: var(--crit); }
@@ -260,7 +299,7 @@ body {
   background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 2px;
+  padding: 3px;
   gap: 2px;
 }
 
@@ -271,7 +310,7 @@ body {
   background: transparent;
   border: none;
   color: var(--text-muted);
-  padding: 5px 10px;
+  padding: 6px 10px;
   border-radius: 4px;
   cursor: pointer;
   font-size: 12px;
@@ -290,9 +329,10 @@ body {
   color: #fff;
   border: none;
   border-radius: var(--radius-sm);
-  padding: 7px 14px;
+  height: 32px;
+  padding: 0 14px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   transition: background .15s, transform .1s;
 }
