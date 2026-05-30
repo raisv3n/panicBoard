@@ -722,6 +722,8 @@ body {
   padding: 24px;
   width: 100%;
   max-width: 440px;
+  max-height: 85vh;
+  overflow-y: auto;
   box-shadow: var(--shadow-lg);
   animation: modal-in .2s cubic-bezier(.34,1.56,.64,1);
 }
