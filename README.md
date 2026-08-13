@@ -2,7 +2,7 @@
 
 A lightweight, deadline-focused Kanban board for tracking tasks with urgency. Built with vanilla HTML, CSS, and JavaScript — no frameworks, no build tools.
 
-**Live app:** [https://panicboard.raisv.com](https://panicboard.raisv.com)
+**Live app:** [https://panicboard.aiss.dev](https://panicboard.aiss.dev)
 
 ![Board View](assets/board-view.png)
 ![Timeline View](assets/timeline-view.png)
